@@ -224,3 +224,10 @@ packages/rfs-mcp/    # Remote-FS MCP server for proxy mode
 ---
 
 Made with ☕ in 2026.
+
+## Languages
+
+- [English (default)](LANDING_EN.md)
+- [Russian](LANDING_RU.md)
+- [Chinese](LANDING_ZH.md)
+- [Spanish](LANDING_ES.md)
