@@ -47,6 +47,10 @@ class WsHub {
     return [...this.agents.entries()].filter(([, c]) => c.ws.readyState === 1).map(([id]) => id);
   }
 
+  onlineAgentCount(): number {
+    return this.onlineDeviceIds().length;
+  }
+
   /**
    * Отправляет сообщение агенту, возвращает функцию отписки.
    * onMessage получает все сообщения с correlation_id = msg.id.
