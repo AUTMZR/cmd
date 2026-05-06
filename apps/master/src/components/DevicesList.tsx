@@ -128,6 +128,10 @@ function DeviceCard({
     device.gemini_logged_in === true ? 'ready' :
     device.gemini_installed === true ? 'no-login' :
     'not-installed';
+  const codexStatus =
+    device.codex_logged_in === true ? 'ready' :
+    device.codex_installed === true ? 'no-login' :
+    'not-installed';
 
   return (
     <button
@@ -185,6 +189,12 @@ function DeviceCard({
                 emoji="✨"
                 status={geminiStatus}
                 preferred={device.preferred_agent === 'gemini-cli'}
+              />
+              <AgentChip
+                label="Codex"
+                emoji="⌘"
+                status={codexStatus}
+                preferred={device.preferred_agent === 'codex-cli'}
               />
             </div>
           )}

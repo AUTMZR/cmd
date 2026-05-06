@@ -15,7 +15,7 @@
  * меняется. Когда появится новое поколение (Opus 5, Gemini 3) — одна правка здесь.
  */
 
-export type Provider = 'claude-code' | 'gemini-cli';
+export type Provider = 'claude-code' | 'gemini-cli' | 'codex-cli';
 
 export interface ModelSpec {
   /** ID как передаётся в CLI через --model / -m */
@@ -43,6 +43,7 @@ export const PROVIDER_NOTICE: Record<Provider, string | null> = {
     'Gemini API ограничен Google по странам (Россия, Китай, Иран и др. — блокируются). ' +
     'Если получаешь «User location is not supported» — нужен VPN на сервере или ' +
     'отдельный агент в неблокированной локации.',
+  'codex-cli': 'Codex CLI требует локальный вход через `codex` или OPENAI_API_KEY на устройстве.',
 };
 
 export const MODELS: Record<Provider, ModelSpec[]> = {
@@ -92,13 +93,38 @@ export const MODELS: Record<Provider, ModelSpec[]> = {
       experimental: true,
     },
   ],
+  'codex-cli': [
+    {
+      id: 'gpt-5.3-codex',
+      label: 'GPT-5.3 Codex',
+      icon: '⌘',
+      tags: ['агентная', 'мощная'],
+      hint: 'Самая сильная Codex-модель для сложных coding-задач',
+      tier: 'premium',
+      experimental: true,
+    },
+    {
+      id: 'gpt-5-codex',
+      label: 'GPT-5 Codex',
+      icon: '⚡',
+      tags: ['баланс'],
+      hint: 'Быстрее и дешевле для обычных задач разработки',
+      tier: 'balanced',
+      experimental: true,
+    },
+  ],
 };
 
 /** Hardcoded per-provider default — финальный fallback если нигде нет явного выбора. */
 export const DEFAULT_MODEL: Record<Provider, string> = {
   'claude-code': 'sonnet',
   'gemini-cli': 'gemini-2.5-pro',
+  'codex-cli': 'gpt-5.3-codex',
 };
+
+export function normalizeProvider(value: string | null | undefined): Provider {
+  return value === 'gemini-cli' || value === 'codex-cli' ? value : 'claude-code';
+}
 
 /** Найти spec модели по id в рамках провайдера. */
 export function findModel(provider: Provider, id: string | null | undefined): ModelSpec | null {

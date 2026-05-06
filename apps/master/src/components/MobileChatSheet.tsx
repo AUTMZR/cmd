@@ -111,7 +111,7 @@ export default function MobileChatSheet({
           {/* Model */}
           <div className="font-mono text-[11px] uppercase tracking-[0.12em] pt-5 pb-2 px-1"
             style={{ color: 'var(--muted)' }}>
-            Модель · {provider === 'gemini-cli' ? 'Gemini' : 'Claude'}
+            Модель · {provider === 'gemini-cli' ? 'Gemini' : provider === 'codex-cli' ? 'Codex' : 'Claude'}
           </div>
           {PROVIDER_NOTICE[provider] && (
             <div className="mb-2 px-3 py-2 rounded-[10px] text-[12px]"

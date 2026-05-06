@@ -49,7 +49,7 @@ export interface HelloMessage extends Envelope {
   os: string;
   arch: string;
   hostname: string;
-  capabilities: Array<'exec' | 'claude' | 'fs' | 'gemini'>;
+  capabilities: Array<'exec' | 'claude' | 'fs' | 'gemini' | 'codex'>;
   claude: {
     installed: boolean;
     version?: string;
@@ -57,6 +57,12 @@ export interface HelloMessage extends Envelope {
   };
   /** Опциональный блок — присутствует только если агент проверяет Gemini CLI (v >= 0.3) */
   gemini?: {
+    installed: boolean;
+    version?: string;
+    logged_in: boolean;
+  };
+  /** Optional block for Codex CLI status. */
+  codex?: {
     installed: boolean;
     version?: string;
     logged_in: boolean;
@@ -104,7 +110,7 @@ export type PermissionMode = 'default' | 'acceptEdits' | 'plan' | 'bypassPermiss
 export type Effort = 'low' | 'medium' | 'high';
 
 /** Какой CLI агент вызывать. Default = 'claude-code' для обратной совместимости. */
-export type AgentProvider = 'claude-code' | 'gemini-cli';
+export type AgentProvider = 'claude-code' | 'gemini-cli' | 'codex-cli';
 
 export interface ClaudeRequest extends Envelope {
   type: 'claude';
@@ -254,6 +260,7 @@ export interface StatusReply extends Envelope {
   type: 'status.reply';
   correlation_id: string;
   claude: { installed: boolean; version?: string; logged_in: boolean };
+  codex?: { installed: boolean; version?: string; logged_in: boolean };
   disk: { free_bytes: number; total_bytes: number };
   uptime_s: number;
 }

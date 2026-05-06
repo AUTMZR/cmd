@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { MODELS as MODEL_CATALOG, DEFAULT_MODEL, PROVIDER_NOTICE, type Provider, isValidModel } from '@/lib/models';
+import { MODELS as MODEL_CATALOG, DEFAULT_MODEL, PROVIDER_NOTICE, normalizeProvider, type Provider, isValidModel } from '@/lib/models';
 
 // ---------------- Data ----------------
 //
@@ -170,7 +170,7 @@ export function ModelEffortPill({
     if (open) { window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }
   }); // eslint-disable-line
 
-  const providerLabel = provider === 'gemini-cli' ? 'Gemini' : 'Claude';
+  const providerLabel = provider === 'gemini-cli' ? 'Gemini' : provider === 'codex-cli' ? 'Codex' : 'Claude';
 
   return (
     <div className="relative" ref={ref}>
@@ -256,5 +256,5 @@ function Kbd({ children }: { children: React.ReactNode }) {
 }
 
 // Re-export для других файлов которые хотят провайдер-aware каталог
-export { MODEL_CATALOG, DEFAULT_MODEL, isValidModel };
+export { MODEL_CATALOG, DEFAULT_MODEL, normalizeProvider, isValidModel };
 export type { Provider };

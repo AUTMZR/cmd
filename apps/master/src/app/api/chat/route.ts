@@ -10,7 +10,7 @@ import type {
 import { processClaudeMessage, startJob } from '@/lib/job-tracker';
 import { issueRfsToken } from '@/lib/rfs-tokens';
 import { effectiveIntent } from '@/lib/device-intent';
-import { resolveModel, type Provider } from '@/lib/models';
+import { normalizeProvider, resolveModel, type Provider } from '@/lib/models';
 import { parseCliError } from '@/lib/cli-error-parser';
 
 /**
@@ -89,9 +89,9 @@ export async function POST(req: NextRequest) {
 
   // Выбор провайдера (claude-code | gemini-cli). Берём из preferred_agent того
   // устройства которое реально будет крутить AI (cd в proxy-режиме, d иначе).
-  const provider: Provider =
-    (isProxy ? project!.claude_device_preferred_agent : project!.device_preferred_agent) === 'gemini-cli'
-      ? 'gemini-cli' : 'claude-code';
+  const provider: Provider = normalizeProvider(
+    isProxy ? project!.claude_device_preferred_agent : project!.device_preferred_agent,
+  );
 
   // Session: загружаем model из БД, либо создаём с наследованием.
   // Fallback-цепочка для итогового model:

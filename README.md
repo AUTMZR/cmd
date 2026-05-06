@@ -19,7 +19,7 @@ Autmzr is an open-source, self-hosted web app that lets you drive AI coding CLIs
 
 - 📱 **Mobile-first.** Designed for thumbs, not adapted from a desktop UI.
 - 🌐 **Multi-server.** Manage your fleet from one screen.
-- 🔌 **Multi-CLI.** Claude Code + Gemini today. Codex, Aider, Cursor on the roadmap.
+- 🔌 **Multi-CLI.** Claude Code + Gemini + Codex today. Aider and Cursor are on the roadmap.
 - 🎙️ **Voice input.** Long prompts on a phone = pain. Dictate them.
 - 🔒 **Self-hosted.** Your servers, your keys, your data. Open source — verify it.
 - ⏳ **Async-first.** Kick off a task, close the app, walk away. Agent keeps running on your server.
@@ -141,7 +141,7 @@ That's what Autmzr is.
 - [x] Voice input (Web Speech API)
 
 ### v0.2 — integrations & DX
-- [ ] Codex CLI integration
+- [x] Codex CLI integration
 - [ ] Push notifications (PWA)
 - [ ] Plugin API for community CLIs
 - [ ] Auto-update via GitHub Releases
@@ -207,7 +207,7 @@ apps/master/         # Next.js 14 + custom WS server (port 3100)
   src/lib/           # auth, db, ws-hub, models, cli-error-parser
   migrations/        # 001-NNN_*.sql
   public/agent.js    # Bundled agent, served on download
-apps/agent/          # Standalone Node, WS-reconnect, claude/gemini handlers
+apps/agent/          # Standalone Node, WS-reconnect, claude/gemini/codex handlers
 packages/protocol/   # Shared types (@autmzr/command-protocol)
 packages/rfs-mcp/    # Remote-FS MCP server for proxy mode
 ```

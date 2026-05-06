@@ -4,14 +4,14 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, X, FolderOpen, FolderPlus, Loader2, ChevronRight } from 'lucide-react';
 import DeviceBrowser from './DeviceBrowser';
 import { effectiveIntent, type DeviceIntent } from '@/lib/device-intent';
-import { MODELS, DEFAULT_MODEL, type Provider } from '@/lib/models';
+import { MODELS, DEFAULT_MODEL, normalizeProvider, type Provider } from '@/lib/models';
 
 interface Device {
   id: string; name: string; kind: string; online: boolean;
   root_path?: string | null;
   agent_logged_in?: boolean | null;
   intent?: DeviceIntent | null;
-  preferred_agent?: 'claude-code' | 'gemini-cli' | null;
+  preferred_agent?: Provider | null;
 }
 interface Props {
   devices: Device[];
@@ -52,7 +52,7 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
   // (claude-device в proxy-режиме, иначе — само устройство)
   const runningDeviceId = needsClaudeDevice ? claudeDeviceId : deviceId;
   const runningDevice = devices.find(d => d.id === runningDeviceId);
-  const provider: Provider = (runningDevice?.preferred_agent === 'gemini-cli') ? 'gemini-cli' : 'claude-code';
+  const provider: Provider = normalizeProvider(runningDevice?.preferred_agent);
   const availableModels = MODELS[provider];
 
   // Автовыбор balanced-модели провайдера при смене провайдера
@@ -304,7 +304,7 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
               {proxyOk && (
                 <div className="mt-2 flex flex-col gap-1.5">
                   <div className="text-[11px] uppercase tracking-wider" style={{ color: 'var(--muted)' }}>
-                    Модель по умолчанию ({provider === 'gemini-cli' ? 'Gemini' : 'Claude'})
+                    Модель по умолчанию ({provider === 'gemini-cli' ? 'Gemini' : provider === 'codex-cli' ? 'Codex' : 'Claude'})
                   </div>
                   <div className="grid grid-cols-3 gap-1.5">
                     {availableModels.map(m => {

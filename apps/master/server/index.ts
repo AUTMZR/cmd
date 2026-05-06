@@ -151,12 +151,14 @@ function onAgentConnect(ws: WebSocket, device: { id: string; user_id: string; na
          SET hostname=$1, os=$2, arch=$3, capabilities=$4::jsonb, last_version=$5,
              agent_logged_in=$6, agent_installed=$7, agent_version=$8,
              gemini_logged_in=$9, gemini_installed=$10, gemini_version=$11,
+             codex_logged_in=$12, codex_installed=$13, codex_version=$14,
              last_online=NOW()
-         WHERE id=$12`,
+         WHERE id=$15`,
         [
           h.hostname, h.os, h.arch, JSON.stringify(h.capabilities), h.version,
           h.claude.logged_in, h.claude.installed, h.claude.version ?? null,
           h.gemini?.logged_in ?? null, h.gemini?.installed ?? null, h.gemini?.version ?? null,
+          h.codex?.logged_in ?? null, h.codex?.installed ?? null, h.codex?.version ?? null,
           device.id,
         ],
       ).catch(() => {});

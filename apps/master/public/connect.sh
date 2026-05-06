@@ -273,4 +273,5 @@ fi
 echo "Диагностика окружения:"
 command -v node >/dev/null 2>&1 && echo "  node: $(node --version) @ $(which node)" || echo "  ❌ node НЕ НАЙДЕН"
 command -v curl >/dev/null 2>&1 && echo "  curl: $(curl --version | head -1 | cut -d ' ' -f 1-2)" || echo "  ❌ curl отсутствует"
+command -v codex >/dev/null 2>&1 && echo "  codex: $(codex --version 2>/dev/null | head -1) @ $(which codex)" || echo "  codex: не установлен (опционально)"
 echo "  master URL: $MASTER"
