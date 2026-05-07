@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import Markdown from './Markdown';
 import { COMMANDS, matchCommands, parseSlash, findCommand } from './slashCommands';
-import { ModePill, ModelEffortPill, MODELS, MODES, EFFORTS, normalizeModel, MODEL_CATALOG, DEFAULT_MODEL, type ModelValue, type EffortValue, type ModeValue, type Provider } from './Controls';
+import { ModePill, ModelEffortPill, MODELS, MODES, EFFORTS, normalizeModel, MODEL_CATALOG, DEFAULT_MODEL, normalizeProvider, type ModelValue, type EffortValue, type ModeValue, type Provider } from './Controls';
 import { effectiveIntent, type DeviceIntent } from '@/lib/device-intent';
 import { useSpeechRecognition } from '@/lib/useSpeechRecognition';
 import MobileTabBar, { type MobileTab } from './MobileTabBar';
@@ -38,7 +38,7 @@ interface Device {
   gemini_installed?: boolean | null;
   gemini_version?: string | null;
   gemini_logged_in?: boolean | null;
-  preferred_agent?: 'claude-code' | 'gemini-cli' | null;
+  preferred_agent?: Provider | null;
   last_online: string | null; root_path: string | null;
   intent?: DeviceIntent | null;
 }
@@ -46,8 +46,8 @@ interface Project {
   id: string; name: string; path: string | null; device_id: string | null;
   claude_device_id?: string | null;
   device_name: string | null; device_kind: string | null;
-  device_preferred_agent?: 'claude-code' | 'gemini-cli' | null;
-  claude_device_preferred_agent?: 'claude-code' | 'gemini-cli' | null;
+  device_preferred_agent?: Provider | null;
+  claude_device_preferred_agent?: Provider | null;
   instructions: string; chat_count: number;
   default_model?: string | null;
 }
@@ -442,7 +442,7 @@ export default function AppShell({ user }: { user: User }) {
       ? devices.find(d => d.id === activeProject.claude_device_id)
       : null;
     const runningDevice = claudeDev || activeDevice;
-    return runningDevice?.preferred_agent === 'gemini-cli' ? 'gemini-cli' : 'claude-code';
+    return normalizeProvider(runningDevice?.preferred_agent);
   })();
 
   // Sync model при смене активного проекта: если текущая model не валидна для

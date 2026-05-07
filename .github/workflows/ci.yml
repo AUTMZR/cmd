@@ -46,6 +46,9 @@ jobs:
       - name: Build agent
         run: npm run build -w apps/agent
 
+      - name: Test agent
+        run: npm test -w apps/agent
+
   shellcheck:
     runs-on: ubuntu-latest
     steps:

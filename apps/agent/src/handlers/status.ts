@@ -9,6 +9,7 @@ export interface AgentInfo { installed: boolean; version?: string; logged_in: bo
 
 export async function handleStatus(req: StatusRequest): Promise<StatusReply> {
   const claude = await probeClaude();
+  const codex = await probeCodex();
   let disk = { free_bytes: 0, total_bytes: 0 };
   try {
     const s = await statfs('/');
@@ -18,6 +19,7 @@ export async function handleStatus(req: StatusRequest): Promise<StatusReply> {
     type: 'status.reply',
     correlation_id: req.id,
     claude,
+    codex,
     disk,
     uptime_s: Math.round(process.uptime()),
   };
@@ -114,6 +116,24 @@ export async function probeGemini(): Promise<AgentInfo> {
 
   // login-shell fallback (на случай если gemini в nvm/homebrew/etc пути)
   const viaLogin = await spawnBinaryVersion('bash', ['-lc', 'gemini --version']);
+  if (viaLogin.installed) return { ...viaLogin, logged_in: loggedIn };
+
+  return { installed: false, logged_in: loggedIn };
+}
+
+/* ============================= CODEX PROBE ============================= */
+
+export async function probeCodex(): Promise<AgentInfo> {
+  const home = homedir();
+  const loggedIn =
+    Boolean(process.env.OPENAI_API_KEY) ||
+    existsSync(join(home, '.codex', 'auth.json')) ||
+    existsSync(join(home, '.codex', 'config.toml'));
+
+  const direct = await spawnBinaryVersion(process.env.PC_CODEX_PATH || 'codex', ['--version']);
+  if (direct.installed) return { ...direct, logged_in: loggedIn };
+
+  const viaLogin = await spawnBinaryVersion('bash', ['-lc', 'codex --version']);
   if (viaLogin.installed) return { ...viaLogin, logged_in: loggedIn };
 
   return { installed: false, logged_in: loggedIn };

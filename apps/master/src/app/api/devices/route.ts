@@ -12,6 +12,7 @@ export async function GET() {
     `SELECT id, name, kind, hostname, os, arch, capabilities, last_online, last_version,
             agent_logged_in, agent_installed, agent_version, agent_kind,
             gemini_logged_in, gemini_installed, gemini_version, preferred_agent,
+            codex_logged_in, codex_installed, codex_version,
             root_path, intent, created_at
      FROM pc.devices WHERE user_id = $1 ORDER BY created_at DESC`,
     [user.id],
@@ -26,7 +27,7 @@ export async function PUT(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id, name, root_path, intent, preferred_agent } = await req.json();
   // Валидация preferred_agent — только известные значения
-  const validPreferred = preferred_agent && ['claude-code', 'gemini-cli'].includes(preferred_agent)
+  const validPreferred = preferred_agent && ['claude-code', 'gemini-cli', 'codex-cli'].includes(preferred_agent)
     ? preferred_agent
     : null;
   await query(

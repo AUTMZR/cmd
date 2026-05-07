@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { Settings as SettingsIcon, FolderOpen, Folder, Plug, X } from 'lucide-react';
 import DeviceBrowser from './DeviceBrowser';
 import { effectiveIntent, type DeviceIntent } from '@/lib/device-intent';
+import type { Provider } from '@/lib/models';
 
 const ClaudeInstallModal = dynamic(() => import('./ClaudeInstallModal'), { ssr: false, loading: () => null });
 const ClaudeLoginModal = dynamic(() => import('./ClaudeLoginModal'), { ssr: false, loading: () => null });
@@ -20,7 +21,10 @@ export interface DeviceSheetDevice {
   gemini_installed?: boolean | null;
   gemini_version?: string | null;
   gemini_logged_in?: boolean | null;
-  preferred_agent?: 'claude-code' | 'gemini-cli' | null;
+  codex_installed?: boolean | null;
+  codex_version?: string | null;
+  codex_logged_in?: boolean | null;
+  preferred_agent?: Provider | null;
   last_online: string | null; root_path: string | null;
   intent?: DeviceIntent | null;
 }
@@ -30,7 +34,7 @@ export interface DeviceSheetDevice {
  * welcome-экране или в sidebar. Показывает ТОЛЬКО про это устройство:
  *  - статус Claude CLI (Install/Login)
  *  - статус Gemini CLI (Setup)
- *  - Default agent (Claude / Gemini)
+ *  - Default agent (Claude / Gemini / Codex)
  *  - Файлы · Корень проектов · Intent-toggle · Отключить
  *  - Внизу ссылка на полные Settings (тема, invites, аккаунт)
  */
@@ -56,7 +60,7 @@ export default function DeviceSheet({
   const role = effectiveIntent(device);
   const isClaudeRole = role === 'claude';
 
-  async function setPreferredAgent(provider: 'claude-code' | 'gemini-cli') {
+  async function setPreferredAgent(provider: Provider) {
     await fetch('/api/devices', {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: device.id, preferred_agent: provider }),
@@ -94,6 +98,7 @@ export default function DeviceSheet({
   const claudeLoggedIn = device.agent_logged_in === true;
   const geminiInstalled = device.gemini_installed === true;
   const geminiLoggedIn = device.gemini_logged_in === true;
+  const codexLoggedIn = device.codex_logged_in === true;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -211,12 +216,13 @@ export default function DeviceSheet({
               )}
 
               {/* Default-agent селектор */}
-              {(claudeLoggedIn || geminiLoggedIn) && (
+              {(claudeLoggedIn || geminiLoggedIn || codexLoggedIn) && (
                 <div className="flex items-center gap-2 mt-3 pt-3" style={{ borderTop: '1px dashed var(--border)' }}>
                   <span className="text-[11.5px]" style={{ color: 'var(--muted)' }}>По умолчанию:</span>
                   {([
                     { id: 'claude-code', label: '🤖 Claude', ready: claudeLoggedIn },
                     { id: 'gemini-cli',  label: '✨ Gemini', ready: geminiLoggedIn },
+                    { id: 'codex-cli',   label: '⌘ Codex', ready: codexLoggedIn },
                   ] as const).map((opt) => {
                     const active = (device.preferred_agent || 'claude-code') === opt.id;
                     return (

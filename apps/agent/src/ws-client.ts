@@ -8,7 +8,7 @@ import { PROTOCOL_VERSION } from '@autmzr/command-protocol';
 import { handleExec } from './handlers/exec.js';
 import { handleFsList, handleFsRead, handleFsWrite, handleFsMkdir, handleFsDelete } from './handlers/fs.js';
 import { handleClaude } from './handlers/claude.js';
-import { handleStatus, probeClaude, probeGemini } from './handlers/status.js';
+import { handleStatus, probeClaude, probeGemini, probeCodex } from './handlers/status.js';
 import { handlePtyOpen, handlePtyData, handlePtyResize, handlePtyClose, killAllPty } from './handlers/pty.js';
 import { jobList, jobRead, jobDelete, jobCleanup } from './job-buffer.js';
 import type { AgentConfig } from './config.js';
@@ -35,9 +35,10 @@ export function connect(cfg: AgentConfig): void {
 
   ws.on('open', async () => {
     log('connected');
-    const [claude, gemini] = await Promise.all([probeClaude(), probeGemini()]);
+    const [claude, gemini, codex] = await Promise.all([probeClaude(), probeGemini(), probeCodex()]);
     const capabilities: HelloMessage['capabilities'] = ['exec', 'claude', 'fs'];
     if (gemini.installed) capabilities.push('gemini');
+    if (codex.installed) capabilities.push('codex');
     const hello: HelloMessage = {
       type: 'hello',
       agent: 'autmzr-command-agent',
@@ -48,6 +49,7 @@ export function connect(cfg: AgentConfig): void {
       capabilities,
       claude,
       gemini,
+      codex,
     };
     send(ws, hello);
 
