@@ -299,24 +299,31 @@
   "auth": {
     "appName": "Autmzr Command",
     "subtitleSetup": "创建管理员账户",
-    "subtitleSignup": "凭邀请码注册",
+    "subtitleSignup": "创建账户 — 14 天免费",
     "subtitleSignin": "登录你的账户",
     "name": "姓名",
     "namePlaceholder": "Alex",
     "email": "邮箱",
     "emailPlaceholder": "you@example.com",
     "password": "密码",
-    "inviteCode": "邀请码",
-    "invitePlaceholder": "管理员给的邀请码",
     "passwordHint": "最少 8 个字符 · 字母 + 数字",
     "submitSetup": "创建并登录",
-    "submitSignup": "注册",
+    "submitSignup": "开始免费试用",
     "submitSignin": "登录",
-    "switchToSignup": "有邀请码?注册",
-    "switchToSignin": "← 用已有账户登录",
+    "switchToSignup": "没有账户?注册 — 14 天免费",
+    "switchToSignin": "← 已有账户?登录",
     "footer": "自托管 · AGPL-3.0 · 连接你自己的服务器",
     "loading": "加载中…",
-    "errorFallback": "错误 {status}"
+    "errorFallback": "错误 {status}",
+    "err": {
+      "password_too_short": "密码最少 8 个字符",
+      "password_needs_letters": "密码必须包含字母",
+      "password_needs_digits": "密码必须包含数字",
+      "password_too_long": "密码过长",
+      "email_required": "请输入邮箱",
+      "user_exists": "该邮箱已注册",
+      "invite_invalid": "邀请码无效或已被使用"
+    }
   },
   "fileEditor": {
     "unsaved": "未保存",

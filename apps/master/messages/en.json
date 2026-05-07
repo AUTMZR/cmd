@@ -299,24 +299,31 @@
   "auth": {
     "appName": "Autmzr Command",
     "subtitleSetup": "Create admin account",
-    "subtitleSignup": "Sign up by invite",
+    "subtitleSignup": "Create your account — 14 days free",
     "subtitleSignin": "Sign in to your account",
     "name": "Name",
     "namePlaceholder": "Alex",
     "email": "Email",
     "emailPlaceholder": "you@example.com",
     "password": "Password",
-    "inviteCode": "Invite code",
-    "invitePlaceholder": "Code from admin",
     "passwordHint": "Min 8 chars · letters + digits",
     "submitSetup": "Create and sign in",
-    "submitSignup": "Sign up",
+    "submitSignup": "Start free trial",
     "submitSignin": "Sign in",
-    "switchToSignup": "Have invite? Sign up",
-    "switchToSignin": "← Sign in to existing account",
+    "switchToSignup": "New here? Sign up — 14 days free",
+    "switchToSignin": "← Already have an account? Sign in",
     "footer": "self-hosted · AGPL-3.0 · connect your own servers",
     "loading": "Loading…",
-    "errorFallback": "Error {status}"
+    "errorFallback": "Error {status}",
+    "err": {
+      "password_too_short": "Password must be at least 8 characters",
+      "password_needs_letters": "Password must contain letters",
+      "password_needs_digits": "Password must contain digits",
+      "password_too_long": "Password is too long",
+      "email_required": "Email is required",
+      "user_exists": "An account with this email already exists",
+      "invite_invalid": "Invite code is invalid or already used"
+    }
   },
   "fileEditor": {
     "unsaved": "unsaved",

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Sparkles, Loader2, Lock, Mail, User as UserIcon, Ticket } from 'lucide-react';
+import { Sparkles, Loader2, Lock, Mail, User as UserIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { api } from '@/lib/api';
 
@@ -12,26 +12,29 @@ interface Props {
 
 type Mode = 'login' | 'signup';
 
+/** Опциональный invite-код через URL — admin может раздавать early-access ссылки.
+ *  Поле в форме спрятано, код просто прокидывается при отправке. */
+function readInviteFromUrl(): string {
+  if (typeof window === 'undefined') return '';
+  return new URL(window.location.href).searchParams.get('invite') || '';
+}
+
 export default function AuthScreen({ needSetup, onAuth }: Props) {
   const t = useTranslations('auth');
   // needSetup === true → форсим регистрацию первого админа.
-  // Иначе пользователь сам выбирает: «Войти» или «Регистрация» (по invite-коду).
+  // Иначе публичная регистрация (email + пароль, 14-дневный trial).
   const [mode, setMode] = useState<Mode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [inviteCode, setInviteCode] = useState('');
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
 
-  // Если пришли по ссылке /?invite=XXX — автоматически открываем регистрацию
+  // Если пришли по ссылке /?invite=XXX — переключаем в signup-режим.
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const code = new URL(window.location.href).searchParams.get('invite');
-    if (code && !needSetup) {
-      setInviteCode(code);
-      setMode('signup');
-    }
+    const code = readInviteFromUrl();
+    if (code && !needSetup) setMode('signup');
   }, [needSetup]);
 
   const isSignup = needSetup || mode === 'signup';
@@ -44,7 +47,8 @@ export default function AuthScreen({ needSetup, onAuth }: Props) {
     const body: Record<string, unknown> = { email, password };
     if (isSignup) {
       body.name = name;
-      if (!needSetup) body.inviteCode = inviteCode;
+      const invite = readInviteFromUrl();
+      if (invite && !needSetup) body.inviteCode = invite;
     }
     const r = await api('/api/auth', {
       method: isSignup ? 'PUT' : 'POST',
@@ -54,7 +58,15 @@ export default function AuthScreen({ needSetup, onAuth }: Props) {
     setBusy(false);
     if (!r.ok) {
       const j = await r.json().catch(() => ({}));
-      setErr(j.error || t('errorFallback', { status: r.status })); return;
+      const code = (j.errorCode || j.error) as string | undefined;
+      // Локализуем известные коды ошибок; для неизвестных показываем как есть.
+      const known = new Set([
+        'password_too_short', 'password_needs_letters', 'password_needs_digits', 'password_too_long',
+        'email_required', 'user_exists', 'invite_invalid',
+      ]);
+      const localized = code && known.has(code) ? t(`err.${code}`) : code || t('errorFallback', { status: r.status });
+      setErr(localized);
+      return;
     }
     const j = await r.json();
     onAuth(j.user);
@@ -98,13 +110,6 @@ export default function AuthScreen({ needSetup, onAuth }: Props) {
               </p>
             )}
           </div>
-          {isSignup && !needSetup && (
-            <div>
-              <label className="field-label flex items-center gap-1.5"><Ticket size={11} />{t('inviteCode')}</label>
-              <input value={inviteCode} required onChange={(e) => setInviteCode(e.target.value.trim())}
-                className="field font-mono" placeholder={t('invitePlaceholder')} />
-            </div>
-          )}
           {err && (
             <div className="text-[12px] px-3 py-2 rounded-lg flex items-start gap-2"
               style={{ background: 'var(--danger-bg)', color: 'var(--danger)' }}>

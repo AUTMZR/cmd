@@ -299,24 +299,31 @@
   "auth": {
     "appName": "Autmzr Command",
     "subtitleSetup": "Создай аккаунт администратора",
-    "subtitleSignup": "Регистрация по приглашению",
+    "subtitleSignup": "Создай аккаунт — 14 дней бесплатно",
     "subtitleSignin": "Войди в свой аккаунт",
     "name": "Имя",
     "namePlaceholder": "Александр",
     "email": "Email",
     "emailPlaceholder": "you@example.com",
     "password": "Пароль",
-    "inviteCode": "Invite-код",
-    "invitePlaceholder": "код от админа",
     "passwordHint": "Минимум 8 символов · буквы + цифры",
     "submitSetup": "Создать и войти",
-    "submitSignup": "Зарегистрироваться",
+    "submitSignup": "Начать бесплатно",
     "submitSignin": "Войти",
-    "switchToSignup": "Есть invite-код? Зарегистрироваться",
-    "switchToSignin": "← Войти существующим аккаунтом",
+    "switchToSignup": "Нет аккаунта? Зарегистрироваться — 14 дней бесплатно",
+    "switchToSignin": "← Уже есть аккаунт? Войти",
     "footer": "self-hosted · AGPL-3.0 · подключай свои серверы",
     "loading": "Загрузка…",
-    "errorFallback": "Ошибка {status}"
+    "errorFallback": "Ошибка {status}",
+    "err": {
+      "password_too_short": "Пароль минимум 8 символов",
+      "password_needs_letters": "Пароль должен содержать буквы",
+      "password_needs_digits": "Пароль должен содержать цифры",
+      "password_too_long": "Пароль слишком длинный",
+      "email_required": "Укажи email",
+      "user_exists": "Аккаунт с таким email уже существует",
+      "invite_invalid": "Invite-код недействителен или уже использован"
+    }
   },
   "fileEditor": {
     "unsaved": "не сохр",

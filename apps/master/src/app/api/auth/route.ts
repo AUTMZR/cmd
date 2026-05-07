@@ -55,7 +55,11 @@ export async function POST(req: NextRequest) {
 /**
  * PUT — регистрация.
  *   - Если в системе нет ни одного юзера → создаётся первый админ (setup mode).
- *   - Иначе требуется invite-код (`inviteCode` в body).
+ *   - Иначе — публичная регистрация: email + пароль, 14-дневный trial из коробки.
+ *   - Опционально можно прислать `inviteCode` (legacy): код помечается как использованный
+ *     для аналитики, но обязательным больше не является.
+ *
+ * Все user-facing error-сообщения возвращаются как `errorCode` — фронт их локализует.
  */
 export async function PUT(req: NextRequest) {
   const csrfBlocked = await requireCsrf(req);
@@ -75,9 +79,9 @@ export async function PUT(req: NextRequest) {
   const name = body.name ? String(body.name).trim() : undefined;
   const inviteCode = body.inviteCode ? String(body.inviteCode).trim() : undefined;
 
-  if (!email) return NextResponse.json({ error: 'Email required' }, { status: 400 });
+  if (!email) return NextResponse.json({ errorCode: 'email_required' }, { status: 400 });
   const pwErr = checkPasswordPolicy(password);
-  if (pwErr) return NextResponse.json({ error: pwErr }, { status: 400 });
+  if (pwErr) return NextResponse.json({ errorCode: pwErr }, { status: 400 });
 
   const ip = clientIpFrom(req);
   const ua = req.headers.get('user-agent');
@@ -85,25 +89,28 @@ export async function PUT(req: NextRequest) {
 
   try {
     let user;
+    let viaInvite = false;
     if (!has) {
-      // Setup mode — первый юзер становится админом, без invite.
+      // Setup mode — первый юзер становится админом.
       user = await register(email, password, name, true);
       log.info('setup: first admin created', { userId: user.id, email });
-    } else {
-      // Все остальные — только по приглашению.
-      if (!inviteCode) {
-        return NextResponse.json({ error: 'Нужен invite-код для регистрации' }, { status: 403 });
-      }
+    } else if (inviteCode) {
+      // Legacy: invite-код — оставлен для админов, которые хотят раздавать early-access ссылки.
       user = await registerWithInvite(email, password, name, inviteCode);
+      viaInvite = true;
       log.info('signup via invite', { userId: user.id, email, inviteCode });
+    } else {
+      // Public signup — 14-day trial проставляется в register().
+      user = await register(email, password, name, false);
+      log.info('public signup', { userId: user.id, email });
     }
     await login(user.email, password);
-    await auditAuth({ event: 'signup', email, ip, userAgent: ua, meta: { userId: user.id, viaInvite: !!inviteCode } });
+    await auditAuth({ event: 'signup', email, ip, userAgent: ua, meta: { userId: user.id, viaInvite } });
     return NextResponse.json({ user });
   } catch (e) {
-    const msg = (e as Error).message;
-    log.warn('signup failed', { email, ip, err: msg });
-    return NextResponse.json({ error: msg }, { status: 400 });
+    const code = (e as Error).message;
+    log.warn('signup failed', { email, ip, err: code });
+    return NextResponse.json({ errorCode: code }, { status: 400 });
   }
 }
 

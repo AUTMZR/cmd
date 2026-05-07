@@ -55,14 +55,21 @@ export async function logout(): Promise<void> {
   jar.delete(SESSION_COOKIE);
 }
 
+/** TTL trial для новых публичных регистраций (см. landing pricing). */
+const TRIAL_DAYS = 14;
+
 export async function register(email: string, password: string, name?: string, isAdmin = false): Promise<User> {
   const hash = await bcrypt.hash(password, 10);
+  // Админы получают NULL trial (бесконечный доступ). Остальные — 14 дней с NOW().
+  const trialUntil = isAdmin
+    ? null
+    : new Date(Date.now() + TRIAL_DAYS * 24 * 3600 * 1000).toISOString();
   const rows = await query<{ id: string }>(
-    `INSERT INTO pc.users (email, password_hash, name, is_admin) VALUES ($1, $2, $3, $4)
+    `INSERT INTO pc.users (email, password_hash, name, is_admin, trial_until) VALUES ($1, $2, $3, $4, $5)
      ON CONFLICT (email) DO NOTHING RETURNING id`,
-    [email, hash, name || null, isAdmin],
+    [email, hash, name || null, isAdmin, trialUntil],
   );
-  if (!rows[0]) throw new Error('User already exists');
+  if (!rows[0]) throw new Error('user_exists');
   return { id: rows[0].id, email, name: name || null, is_admin: isAdmin };
 }
 
@@ -130,7 +137,7 @@ export async function validateInvite(code: string): Promise<boolean> {
 /** Регистрирует юзера и помечает invite-код как использованный. */
 export async function registerWithInvite(email: string, password: string, name: string | undefined, code: string): Promise<User> {
   const valid = await validateInvite(code);
-  if (!valid) throw new Error('Invite code is invalid or already used');
+  if (!valid) throw new Error('invite_invalid');
   const user = await register(email, password, name, false);
   await query(
     `UPDATE pc.invite_codes SET used_by = $1, used_at = NOW() WHERE code = $2 AND used_by IS NULL`,
@@ -141,11 +148,11 @@ export async function registerWithInvite(email: string, password: string, name: 
 
 /* ============================== PASSWORD POLICY =========================== */
 
-/** Возвращает null если ок, иначе сообщение об ошибке. */
+/** Возвращает null если ок, иначе error-код для локализации на фронте. */
 export function checkPasswordPolicy(pw: string): string | null {
-  if (!pw || pw.length < 8) return 'Пароль минимум 8 символов';
-  if (!/[A-Za-zА-Яа-я]/.test(pw)) return 'Пароль должен содержать буквы';
-  if (!/[0-9]/.test(pw)) return 'Пароль должен содержать цифры';
-  if (pw.length > 200) return 'Пароль слишком длинный';
+  if (!pw || pw.length < 8) return 'password_too_short';
+  if (!/[A-Za-zА-Яа-я]/.test(pw)) return 'password_needs_letters';
+  if (!/[0-9]/.test(pw)) return 'password_needs_digits';
+  if (pw.length > 200) return 'password_too_long';
   return null;
 }
