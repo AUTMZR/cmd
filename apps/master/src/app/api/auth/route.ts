@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getAuthUser, login, logout, register, hasAnyUser,
-  registerWithInvite, checkPasswordPolicy,
+  registerWithInvite, checkPasswordPolicy, createVerificationToken,
 } from '@/lib/auth';
 import { rateLimit } from '@/lib/rate-limit';
 import { ensureCsrfCookie, requireCsrf } from '@/lib/csrf';
 import { auditAuth, clientIpFrom } from '@/lib/audit';
 import { log } from '@/lib/log';
+import { sendVerificationEmail } from '@/lib/email';
 
 /** GET — текущий пользователь / нужен ли setup. Также выставляет CSRF cookie. */
 export async function GET() {
@@ -106,6 +107,17 @@ export async function PUT(req: NextRequest) {
     }
     await login(user.email, password);
     await auditAuth({ event: 'signup', email, ip, userAgent: ua, meta: { userId: user.id, viaInvite } });
+
+    // Шлём verification email только не-админам (админ при setup автоматически verified).
+    if (!user.email_verified) {
+      try {
+        const token = await createVerificationToken(user.id);
+        await sendVerificationEmail(user.email, user.name, token);
+      } catch (e) {
+        // Не валим signup из-за email-сбоя — юзер сможет запросить resend.
+        log.warn('verification email failed (non-fatal)', { email, err: (e as Error).message });
+      }
+    }
     return NextResponse.json({ user });
   } catch (e) {
     const code = (e as Error).message;

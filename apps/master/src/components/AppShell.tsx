@@ -16,6 +16,7 @@ import { useSpeechRecognition } from '@/lib/useSpeechRecognition';
 import MobileTabBar, { type MobileTab } from './MobileTabBar';
 import DevicesList from './DevicesList';
 import TrialBanner from './TrialBanner';
+import EmailVerifyBanner from './EmailVerifyBanner';
 
 const FileTree = dynamic(() => import('./FileTree'), { ssr: false, loading: () => null });
 const Terminal = dynamic(() => import('./Terminal'), { ssr: false, loading: () => null });
@@ -27,7 +28,7 @@ const DeviceSheet = dynamic(() => import('./DeviceSheet'), { ssr: false, loading
 const FileEditor = dynamic(() => import('./FileEditor'), { ssr: false, loading: () => null });
 const MobileChatSheet = dynamic(() => import('./MobileChatSheet'), { ssr: false, loading: () => null });
 
-interface User { id: string; email: string; name: string | null; is_admin: boolean; trial_until: string | null }
+interface User { id: string; email: string; name: string | null; is_admin: boolean; trial_until: string | null; email_verified: boolean }
 interface Device {
   id: string; name: string; kind: string; hostname: string | null;
   os?: string | null; arch?: string | null;
@@ -593,6 +594,7 @@ export default function AppShell({ user }: { user: User }) {
 
   return (
     <div className="h-dvh flex flex-col" style={{ background: 'var(--bg)', color: 'var(--fg)' }}>
+      <EmailVerifyBanner emailVerified={user.email_verified} />
       <TrialBanner trialUntil={user.trial_until} isAdmin={user.is_admin} />
       <div className="flex-1 min-h-0 flex flex-col md:flex-row">
 

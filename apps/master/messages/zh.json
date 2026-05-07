@@ -283,6 +283,46 @@
       "cta": "升级 →"
     }
   },
+  "verifyEmail": {
+    "idle": {
+      "title": "查收邮箱",
+      "body": "我们已发送确认链接。点击链接激活账户。"
+    },
+    "verifying": {
+      "title": "确认中…",
+      "body": "正在验证你的邮箱。"
+    },
+    "success": {
+      "title": "邮箱已确认",
+      "body": "欢迎使用 Autmzr Command。正在跳转到应用…"
+    },
+    "error": {
+      "title": "无法确认邮箱",
+      "invalid": "链接已使用或已过期。请在下方重新申请。",
+      "missing": "链接缺少 token。请在下方重新申请。",
+      "generic": "出错了。请重新申请链接。"
+    },
+    "redirecting": "正在跳转…",
+    "resendButton": "重新发送确认邮件",
+    "resendSent": "已发送。请查收邮箱。",
+    "resendStub": "邮件服务未配置 — 链接在服务器日志里。",
+    "resendNotLoggedIn": "请先登录以获取新链接。",
+    "resendAlready": "邮箱已确认。",
+    "resendTooSoon": "慢一点 — 等一分钟再试。",
+    "resendFailed": "发送失败。请稍后再试。",
+    "skipForNow": "继续使用应用"
+  },
+  "emailVerify": {
+    "banner": {
+      "text": "确认邮箱以使用全部功能。",
+      "cta": "重新发送",
+      "sent": "已发送。请查收。",
+      "stub": "链接在服务器日志里。",
+      "alreadyVerified": "已确认 — 刷新页面消除。",
+      "tooSoon": "等一分钟。",
+      "failed": "发送失败。"
+    }
+  },
   "mobileTabs": {
     "home": "首页",
     "chats": "聊天",

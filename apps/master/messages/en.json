@@ -283,6 +283,46 @@
       "cta": "Upgrade →"
     }
   },
+  "verifyEmail": {
+    "idle": {
+      "title": "Check your inbox",
+      "body": "We sent a confirmation link to your email. Click it to activate your account."
+    },
+    "verifying": {
+      "title": "Confirming…",
+      "body": "Hang on while we verify your email."
+    },
+    "success": {
+      "title": "Email confirmed",
+      "body": "Welcome to Autmzr Command. Taking you to the app…"
+    },
+    "error": {
+      "title": "We couldn't confirm your email",
+      "invalid": "This link has already been used or expired. Request a new one below.",
+      "missing": "The verification link is missing a token. Request a new one below.",
+      "generic": "Something went wrong. Try requesting a new link."
+    },
+    "redirecting": "Redirecting…",
+    "resendButton": "Resend confirmation email",
+    "resendSent": "Sent. Check your inbox.",
+    "resendStub": "Email service isn't configured — link is in the server logs.",
+    "resendNotLoggedIn": "Sign in first to receive a new link.",
+    "resendAlready": "Your email is already verified.",
+    "resendTooSoon": "Slow down — wait a minute and try again.",
+    "resendFailed": "Couldn't send. Try again in a minute.",
+    "skipForNow": "Continue to the app"
+  },
+  "emailVerify": {
+    "banner": {
+      "text": "Confirm your email to keep using all features.",
+      "cta": "Resend",
+      "sent": "Sent. Check your inbox.",
+      "stub": "Link is in server logs.",
+      "alreadyVerified": "Already verified — refresh to dismiss.",
+      "tooSoon": "Wait a minute.",
+      "failed": "Couldn't send."
+    }
+  },
   "mobileTabs": {
     "home": "Home",
     "chats": "Chats",

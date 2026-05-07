@@ -69,6 +69,13 @@ export default function AuthScreen({ needSetup, onAuth }: Props) {
       return;
     }
     const j = await r.json();
+    // Публичный signup (не setup-режим, не login) → ведём на /verify-email
+    // показать "Check your inbox". Юзер уже залогинен (cookie установлена сервером),
+    // поэтому resend-verification со страницы будет работать.
+    if (isSignup && !needSetup && !j.user?.email_verified) {
+      window.location.href = '/verify-email';
+      return;
+    }
     onAuth(j.user);
   }
 
