@@ -11,6 +11,8 @@ export interface User {
   email: string;
   name: string | null;
   is_admin: boolean;
+  /** ISO-8601 timestamp; null = unrestricted (admin или self-host). */
+  trial_until: string | null;
 }
 
 export async function getAuthUser(): Promise<User | null> {
@@ -18,7 +20,7 @@ export async function getAuthUser(): Promise<User | null> {
   const sid = jar.get(SESSION_COOKIE)?.value;
   if (!sid) return null;
   const user = await queryOne<User>(
-    `SELECT u.id, u.email, u.name, u.is_admin
+    `SELECT u.id, u.email, u.name, u.is_admin, u.trial_until
      FROM pc.user_sessions s JOIN pc.users u ON u.id = s.user_id
      WHERE s.id = $1`,
     [sid],
@@ -32,7 +34,7 @@ export async function getAuthUser(): Promise<User | null> {
 
 export async function login(email: string, password: string): Promise<User | null> {
   const row = await queryOne<User & { password_hash: string }>(
-    `SELECT id, email, name, is_admin, password_hash FROM pc.users WHERE email = $1`,
+    `SELECT id, email, name, is_admin, trial_until, password_hash FROM pc.users WHERE email = $1`,
     [email],
   );
   if (!row || !row.password_hash) return null;
@@ -45,7 +47,10 @@ export async function login(email: string, password: string): Promise<User | nul
     httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production',
     maxAge: 60 * 60 * 24 * 30, path: '/',
   });
-  return { id: row.id, email: row.email, name: row.name, is_admin: row.is_admin };
+  return {
+    id: row.id, email: row.email, name: row.name, is_admin: row.is_admin,
+    trial_until: row.trial_until,
+  };
 }
 
 export async function logout(): Promise<void> {
@@ -70,7 +75,7 @@ export async function register(email: string, password: string, name?: string, i
     [email, hash, name || null, isAdmin, trialUntil],
   );
   if (!rows[0]) throw new Error('user_exists');
-  return { id: rows[0].id, email, name: name || null, is_admin: isAdmin };
+  return { id: rows[0].id, email, name: name || null, is_admin: isAdmin, trial_until: trialUntil };
 }
 
 export async function hasAnyUser(): Promise<boolean> {

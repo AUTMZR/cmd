@@ -276,7 +276,12 @@
     "tagline": "Pro — $19/mo. Unlimited servers, unlimited projects, voice mode, full Claude Code & Gemini integration.",
     "comingSoonTitle": "Payments coming soon",
     "comingSoonBody": "We're integrating the payment provider. During beta all users stay on trial. We'll email {email} when billing goes live.",
-    "comingSoonOk": "Got it"
+    "comingSoonOk": "Got it",
+    "banner": {
+      "daysLeft": "{days, plural, one {# day} other {# days}} left in your free trial",
+      "expired": "Your free trial has ended.",
+      "cta": "Upgrade →"
+    }
   },
   "mobileTabs": {
     "home": "Home",

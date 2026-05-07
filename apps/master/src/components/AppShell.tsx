@@ -15,6 +15,7 @@ import { effectiveIntent, type DeviceIntent } from '@/lib/device-intent';
 import { useSpeechRecognition } from '@/lib/useSpeechRecognition';
 import MobileTabBar, { type MobileTab } from './MobileTabBar';
 import DevicesList from './DevicesList';
+import TrialBanner from './TrialBanner';
 
 const FileTree = dynamic(() => import('./FileTree'), { ssr: false, loading: () => null });
 const Terminal = dynamic(() => import('./Terminal'), { ssr: false, loading: () => null });
@@ -26,7 +27,7 @@ const DeviceSheet = dynamic(() => import('./DeviceSheet'), { ssr: false, loading
 const FileEditor = dynamic(() => import('./FileEditor'), { ssr: false, loading: () => null });
 const MobileChatSheet = dynamic(() => import('./MobileChatSheet'), { ssr: false, loading: () => null });
 
-interface User { id: string; email: string; name: string | null; is_admin: boolean }
+interface User { id: string; email: string; name: string | null; is_admin: boolean; trial_until: string | null }
 interface Device {
   id: string; name: string; kind: string; hostname: string | null;
   os?: string | null; arch?: string | null;
@@ -591,7 +592,9 @@ export default function AppShell({ user }: { user: User }) {
   const MOBILE_BAR_PAD = 'pb-[calc(54px+env(safe-area-inset-bottom,0px))] md:pb-0';
 
   return (
-    <div className="h-dvh flex flex-col md:flex-row" style={{ background: 'var(--bg)', color: 'var(--fg)' }}>
+    <div className="h-dvh flex flex-col" style={{ background: 'var(--bg)', color: 'var(--fg)' }}>
+      <TrialBanner trialUntil={user.trial_until} isAdmin={user.is_admin} />
+      <div className="flex-1 min-h-0 flex flex-col md:flex-row">
 
       {/* ============ SIDEBAR (desktop + landscape-mobile drawer) ============ */}
       <aside className={`${drawerOpen ? 'fixed inset-y-0 left-0 z-50 w-[82%] max-w-[320px] shadow-2xl animate-slideUp md:animate-none' : 'hidden'} md:relative md:flex md:w-[260px] flex-col shrink-0`}
@@ -1458,6 +1461,7 @@ export default function AppShell({ user }: { user: User }) {
           setTimeout(() => taRef.current?.focus(), 100);
         }}
       />
+      </div>
     </div>
   );
 }

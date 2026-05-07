@@ -276,7 +276,12 @@
     "tagline": "Pro — $19/月。无限服务器、无限项目、语音模式、Claude Code 与 Gemini 全集成。",
     "comingSoonTitle": "支付即将上线",
     "comingSoonBody": "正在集成支付提供商。Beta 期间所有用户保持试用。计费上线后我们会发邮件到 {email}。",
-    "comingSoonOk": "知道了"
+    "comingSoonOk": "知道了",
+    "banner": {
+      "daysLeft": "免费试用剩余 {days} 天",
+      "expired": "免费试用已结束。",
+      "cta": "升级 →"
+    }
   },
   "mobileTabs": {
     "home": "首页",

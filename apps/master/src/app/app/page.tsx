@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AppShell from '@/components/AppShell';
 
-interface User { id: string; email: string; name: string | null; is_admin: boolean }
+interface User { id: string; email: string; name: string | null; is_admin: boolean; trial_until: string | null }
 
 export default function AppPage() {
   const router = useRouter();
