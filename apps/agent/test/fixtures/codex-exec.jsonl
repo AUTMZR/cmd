@@ -1,0 +1,3 @@
+{"id":"run-1","msg":{"type":"agent_message_delta","delta":"Hi"}}
+{"id":"run-1","msg":{"type":"agent_message","message":"Hi there"}}
+{"id":"run-1","msg":{"type":"task_complete","last_agent_message":"Hi there"}}

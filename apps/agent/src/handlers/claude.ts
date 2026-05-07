@@ -6,7 +6,7 @@ import { homedir } from 'node:os';
 import type { ClaudeRequest, ClaudeEvent, ClaudeDone, ClaudeError, McpServerSpec } from '@autmzr/command-protocol';
 import { safePath, SafetyError } from '../safety.js';
 import { jobStart, jobAppend, jobFinish } from '../job-buffer.js';
-import { spawnCodex } from './codex.js';
+import { extractCodexResult, extractCodexText, spawnCodex } from './codex.js';
 
 /**
  * Резолвим sentinel "pocket-claude-rfs" / "autmzr-command-rfs" в реальный путь к bundled rfs-mcp-скрипту.
@@ -103,8 +103,11 @@ export function handleClaude(
         event: { type: 'stderr', text: '[autmzr-command] MCP proxy-mode is not supported for Codex CLI yet. Running without MCP.\n' },
       });
     }
-    const proc = spawnCodex(req, cwd, send);
-    wireProcess(req, provider, proc, send);
+    const proc = spawnCodex(req, cwd);
+    wireProcess(req, provider, proc, send, {
+      extractText: extractCodexText,
+      extractResult: extractCodexResult,
+    });
     return;
   }
 
@@ -185,6 +188,10 @@ function wireProcess(
   provider: string,
   proc: ReturnType<typeof spawn>,
   send: (m: ClaudeEvent | ClaudeDone | ClaudeError) => void,
+  options: {
+    extractText?: (ev: Record<string, unknown>) => string;
+    extractResult?: (ev: Record<string, unknown>) => string;
+  } = {},
 ): void {
   const timeoutMs = Math.min(req.timeout_ms ?? 1_800_000, 3_600_000);
   const killer = setTimeout(() => {
@@ -215,6 +222,21 @@ function wireProcess(
         }
         if (ev.type === 'result' && typeof ev.result === 'string') {
           lastResult = ev.result;
+        }
+        const extractedText = options.extractText?.(ev);
+        if (extractedText) {
+          send({
+            type: 'claude.event',
+            correlation_id: req.id,
+            event: {
+              type: 'assistant',
+              message: { content: [{ type: 'text', text: extractedText }] },
+            },
+          });
+        }
+        const extractedResult = options.extractResult?.(ev);
+        if (extractedResult) {
+          lastResult = extractedResult;
         }
         send({ type: 'claude.event', correlation_id: req.id, event: ev });
       } catch {

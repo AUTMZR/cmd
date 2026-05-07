@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsup",
-    "test": "tsx --test test/**/*.test.ts",
+    "test": "tsx --test 'test/**/*.test.ts'",
     "start": "node dist/agent.js"
   },
   "dependencies": {

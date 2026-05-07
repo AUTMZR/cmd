@@ -35,3 +35,5 @@ Autmzr passes the selected model through Codex's `--model` flag. The default is
   without MCP when Codex is selected.
 - Codex session resume is not wired yet; each request starts a fresh
   `codex exec` run.
+- Codex does not expose a `--system-prompt` flag. When a project has a system
+  prompt, Autmzr prepends it to the user prompt before starting `codex exec`.
