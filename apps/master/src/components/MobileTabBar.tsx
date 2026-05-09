@@ -18,6 +18,7 @@
  */
 
 import { Home, MessagesSquare, MonitorSmartphone } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export type MobileTab = 'home' | 'chats' | 'devices' | 'settings';
 // settings = «Профиль» в UI, но id оставлен для совместимости с state.
@@ -31,17 +32,17 @@ interface MobileTabBarProps {
   userInitial?: string;
 }
 
-const FIXED_TABS: Array<{ id: Exclude<MobileTab, 'settings'>; label: string; icon: typeof Home }> = [
-  { id: 'home', label: 'Главная', icon: Home },
-  { id: 'chats', label: 'Чаты', icon: MessagesSquare },
-  { id: 'devices', label: 'Устройства', icon: MonitorSmartphone },
-];
-
 export default function MobileTabBar({ active, onChange, badges, userInitial = '·' }: MobileTabBarProps) {
+  const t = useTranslations('mobileTabs');
+  const FIXED_TABS: Array<{ id: Exclude<MobileTab, 'settings'>; label: string; icon: typeof Home }> = [
+    { id: 'home', label: t('home'), icon: Home },
+    { id: 'chats', label: t('chats'), icon: MessagesSquare },
+    { id: 'devices', label: t('devices'), icon: MonitorSmartphone },
+  ];
   return (
     <nav
       role="tablist"
-      aria-label="Основная навигация"
+      aria-label={t('home') /* fallback aria-label */}
       className="md:hidden fixed left-0 right-0 bottom-0 z-30 flex items-stretch"
       style={{
         background: 'var(--surface)',
@@ -103,7 +104,7 @@ export default function MobileTabBar({ active, onChange, badges, userInitial = '
       <button
         role="tab"
         aria-selected={active === 'settings'}
-        aria-label="Профиль"
+        aria-label={t('profile')}
         onClick={() => onChange('settings')}
         className="flex-1 flex flex-col items-center justify-center gap-0.5 relative"
         style={{
@@ -125,7 +126,7 @@ export default function MobileTabBar({ active, onChange, badges, userInitial = '
         >
           {userInitial.toUpperCase()}
         </span>
-        <span style={{ fontSize: 10.5, lineHeight: 1.1 }}>Профиль</span>
+        <span style={{ fontSize: 10.5, lineHeight: 1.1 }}>{t('profile')}</span>
         {active === 'settings' && (
           <span
             className="absolute top-0 left-1/2 -translate-x-1/2"

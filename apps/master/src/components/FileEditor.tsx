@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface Props { projectId: string; filePath: string; onClose: () => void }
 interface R { path: string; size: number; binary?: boolean; content?: string; error?: string }
 
 export default function FileEditor({ projectId, filePath, onClose }: Props) {
+  const t = useTranslations('fileEditor');
   const [file, setFile] = useState<R | null>(null);
   const [content, setContent] = useState('');
   const [err, setErr] = useState('');
@@ -44,22 +46,22 @@ export default function FileEditor({ projectId, filePath, onClose }: Props) {
           <div className="flex items-center gap-2 min-w-0">
             <span>📄</span>
             <span className="text-sm font-mono truncate">{filePath}</span>
-            {dirty && <span className="text-xs" style={{ color: 'var(--danger)' }}>● не сохр</span>}
+            {dirty && <span className="text-xs" style={{ color: 'var(--danger)' }}>● {t('unsaved')}</span>}
           </div>
           <div className="flex items-center gap-2">
             <button onClick={save} disabled={!dirty || saving || file?.binary}
               className="text-xs px-3 py-1.5 btn-primary disabled:opacity-40">
-              {saving ? '...' : 'Сохранить'}
+              {saving ? '...' : t('save')}
             </button>
             <button onClick={onClose} className="text-xl" style={{ color: 'var(--muted)' }}>×</button>
           </div>
         </div>
         <div className="flex-1 flex flex-col min-h-0">
-          {loading && <div className="p-4 text-sm" style={{ color: 'var(--muted)' }}>Загрузка…</div>}
+          {loading && <div className="p-4 text-sm" style={{ color: 'var(--muted)' }}>{t('loading')}</div>}
           {err && <div className="p-4 text-sm" style={{ color: 'var(--danger)' }}>{err}</div>}
           {file?.binary && (
             <div className="p-6 text-center" style={{ color: 'var(--muted)' }}>
-              <p className="text-sm">Бинарный файл, {file.size} B</p>
+              <p className="text-sm">{t('binaryFile', { size: file.size })}</p>
             </div>
           )}
           {file && !file.binary && (

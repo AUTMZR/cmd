@@ -323,6 +323,19 @@
       "failed": "Не удалось отправить."
     }
   },
+  "mobileChat": {
+    "title": "Настройки чата",
+    "subtitle": "Применяются ко всем сообщениям этой сессии",
+    "modeHeader": "Режим",
+    "modelHeader": "Модель · {provider}",
+    "effortHeader": "Effort",
+    "quickActionsHeader": "Быстрые действия",
+    "deviceFiles": "Файлы устройства",
+    "terminal": "Terminal",
+    "allSlashCommands": "Все slash-команды",
+    "attachFile": "Прикрепить файл",
+    "soonBadge": "скоро"
+  },
   "mobileTabs": {
     "home": "Главная",
     "chats": "Чаты",
@@ -418,7 +431,13 @@
     "pasteModalPlaceholder": "long-press здесь → Paste",
     "willSend": "будет отправлено: <b>{count}</b> символов",
     "cancel": "Отмена",
-    "pasteAction": "Вставить ↵"
+    "pasteAction": "Вставить ↵",
+    "exitedCode": "[процесс завершён, код={code}]",
+    "errorGeneric": "ошибка",
+    "nodePtyMissing": "✗ node-pty не установлен на устройстве",
+    "runOnServer": "На сервере выполни:",
+    "restartAgent": "потом перезапусти агент: systemctl restart autmzr-command-agent",
+    "connectFailed": "не удалось подключиться"
   },
   "invites": {
     "title": "Invite-коды",
@@ -452,8 +471,11 @@
     "alertPasteCreds": "Вставь содержимое файла ~/.claude/.credentials.json",
     "alertNotJson": "Это не похоже на JSON. Скопируй файл целиком.",
     "subscriptionTab": "Подписка",
+    "subscriptionHint": "Pro/Max",
     "apiKeyTab": "API-key",
+    "apiKeyHint": "pay-per-use",
     "oauthTab": "OAuth",
+    "oauthHint": "только локально",
     "subInstructionsTitle": "Как залогиниться через подписку",
     "subInstructionsSteps": "— 4 шага",
     "subStep1": "Ниже сам запустится <code>claude /login</code> — появится URL.",

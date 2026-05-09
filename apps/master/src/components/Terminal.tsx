@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface Line { id: number; kind: 'cmd' | 'out' | 'err' | 'exit'; text: string }
 interface Props { projectId: string | null }
@@ -8,6 +9,7 @@ interface Props { projectId: string | null }
 let seq = 1;
 
 export default function Terminal({ projectId }: Props) {
+  const t = useTranslations('terminal');
   const [lines, setLines] = useState<Line[]>([]);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
@@ -49,7 +51,7 @@ export default function Terminal({ projectId }: Props) {
           } catch {}
         }
       }
-    } catch (e: any) { push('err', e.message || 'Error'); }
+    } catch (e: any) { push('err', e.message || t('errorGeneric')); }
     finally { setBusy(false); }
   }, [busy, projectId]);
 
@@ -97,18 +99,18 @@ export default function Terminal({ projectId }: Props) {
       <div className="flex items-center gap-2 px-3 py-1.5 shrink-0"
         style={{ borderBottom: '1px solid #1a1a1a', background: '#080808' }}>
         <span className="font-mono text-[10.5px] uppercase tracking-[0.1em]" style={{ color: '#6b7280' }}>
-          terminal
+          {t('label')}
         </span>
         <span className="font-mono text-[10.5px]" style={{ color: '#4b5563' }}>·</span>
         <span className="font-mono text-[10.5px]" style={{ color: busy ? '#fbbf24' : '#10b981' }}>
-          {busy ? '● busy' : '● idle'}
+          {busy ? t('statusBusy') : t('statusIdle')}
         </span>
         <div className="flex-1" />
         {lines.length > 0 && (
           <button type="button" onClick={() => setLines([])}
             className="font-mono text-[11px] px-2 py-1 rounded hover:bg-[#1a1a1a]"
             style={{ color: '#d4d4aa', border: '1px solid #262626' }}>
-            clear
+            {t('clear')}
           </button>
         )}
       </div>
@@ -117,15 +119,17 @@ export default function Terminal({ projectId }: Props) {
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 text-[14px] md:text-[12px] leading-[1.45]">
         {lines.length === 0 && (
           <div className="opacity-70 text-[13px] md:text-[12px] leading-relaxed">
-            <div>Команды выполняются на устройстве проекта.</div>
-            <div className="mt-2 opacity-80">Попробуй:</div>
+            <div>{t('intro')}</div>
+            <div className="mt-2 opacity-80">{t('tryIt')}</div>
             <div className="mt-0.5"><span style={{ color: '#d4d4aa' }}>$</span> ls -la</div>
             <div><span style={{ color: '#d4d4aa' }}>$</span> pwd</div>
             <div><span style={{ color: '#d4d4aa' }}>$</span> git status</div>
             <div className="mt-2 opacity-60">
-              На мобиле: кнопки <kbd className="px-1 rounded" style={{ background: '#1a1a1a', border: '1px solid #262626' }}>↑</kbd>{' '}
-              <kbd className="px-1 rounded" style={{ background: '#1a1a1a', border: '1px solid #262626' }}>↓</kbd> — история,{' '}
-              <kbd className="px-1 rounded" style={{ background: '#1a1a1a', border: '1px solid #262626' }}>▶</kbd> — запустить.
+              {t.rich('mobileHint', {
+                up: () => <kbd className="px-1 rounded" style={{ background: '#1a1a1a', border: '1px solid #262626' }}>↑</kbd>,
+                down: () => <kbd className="px-1 rounded" style={{ background: '#1a1a1a', border: '1px solid #262626' }}>↓</kbd>,
+                run: () => <kbd className="px-1 rounded" style={{ background: '#1a1a1a', border: '1px solid #262626' }}>▶</kbd>,
+              })}
             </div>
           </div>
         )}
@@ -143,11 +147,11 @@ export default function Terminal({ projectId }: Props) {
         <button type="button" onClick={prevCmd} disabled={!history.length}
           className="shrink-0 w-9 h-9 rounded-md font-mono text-[15px] disabled:opacity-30"
           style={{ background: '#1a1a1a', color: '#d4d4aa', border: '1px solid #262626' }}
-          aria-label="Предыдущая команда">↑</button>
+          aria-label={t('prevCommand')}>↑</button>
         <button type="button" onClick={nextCmd} disabled={hIdx < 0}
           className="shrink-0 w-9 h-9 rounded-md font-mono text-[15px] disabled:opacity-30"
           style={{ background: '#1a1a1a', color: '#d4d4aa', border: '1px solid #262626' }}
-          aria-label="Следующая команда">↓</button>
+          aria-label={t('nextCommand')}>↓</button>
         <div className="shrink-0 w-px" style={{ background: '#262626' }} />
         {['/', '-', '|', '>', '&&', 'sudo', 'cd ..', 'ls'].map(k => (
           <button key={k} type="button" onClick={() => insertToken(k)}
@@ -168,14 +172,14 @@ export default function Terminal({ projectId }: Props) {
           autoCapitalize="off"
           autoCorrect="off"
           inputMode="text"
-          placeholder={busy ? 'выполняется…' : projectId ? 'команда' : 'выбери проект'}
+          placeholder={busy ? t('placeholderBusy') : projectId ? t('placeholderCommand') : t('placeholderNoProject')}
           className="flex-1 bg-transparent outline-none text-[16px] md:text-[13px] py-1"
           style={{ color: '#e5e7eb' }} />
         <button type="button" onClick={submit}
           disabled={busy || !input.trim() || !projectId}
           className="shrink-0 h-9 px-3 md:h-7 md:px-2 rounded-md font-mono text-[14px] md:text-[12px] font-semibold disabled:opacity-30"
           style={{ background: '#d4d4aa', color: '#0a0a0a' }}
-          aria-label="Выполнить">
+          aria-label={t('run')}>
           {busy ? '…' : '▶'}
         </button>
       </div>

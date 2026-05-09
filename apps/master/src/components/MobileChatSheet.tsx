@@ -6,6 +6,7 @@
  * Открывается тапом по [+] рядом с textarea или по pill «Sonnet 4.6 · Bypass» под композером.
  */
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { MODES, EFFORTS, MODEL_CATALOG, normalizeModel, type ModelValue, type EffortValue, type ModeValue, type Provider } from './Controls';
 import { PROVIDER_NOTICE } from '@/lib/models';
 import { COMMANDS } from './slashCommands';
@@ -35,6 +36,7 @@ export default function MobileChatSheet({
   provider = 'claude-code',
   onOpenFiles, onOpenTerminal, onInsertCommand,
 }: Props) {
+  const t = useTranslations('mobileChat');
   const MODELS_FOR_PROVIDER = MODEL_CATALOG[provider];
   const normalizedModel = normalizeModel(model);
   const [commandsOpen, setCommandsOpen] = useState(false);
@@ -83,12 +85,12 @@ export default function MobileChatSheet({
       >
         <div className="px-4">
           <div className="w-11 h-1 rounded-full mx-auto my-2" style={{ background: 'var(--border-strong)' }} />
-          <h2 className="text-[17px] font-semibold">Настройки чата</h2>
-          <p className="text-[12.5px]" style={{ color: 'var(--muted)' }}>Применяются ко всем сообщениям этой сессии</p>
+          <h2 className="text-[17px] font-semibold">{t('title')}</h2>
+          <p className="text-[12.5px]" style={{ color: 'var(--muted)' }}>{t('subtitle')}</p>
 
           {/* Mode */}
           <div className="font-mono text-[11px] uppercase tracking-[0.12em] pt-4 pb-2 px-1"
-            style={{ color: 'var(--muted)' }}>Режим</div>
+            style={{ color: 'var(--muted)' }}>{t('modeHeader')}</div>
           <div className="flex gap-2 flex-wrap">
             {MODES.filter(m => !m.disabled).map(m => {
               const isBypass = m.value === 'bypassPermissions';
@@ -111,7 +113,7 @@ export default function MobileChatSheet({
           {/* Model */}
           <div className="font-mono text-[11px] uppercase tracking-[0.12em] pt-5 pb-2 px-1"
             style={{ color: 'var(--muted)' }}>
-            Модель · {provider === 'gemini-cli' ? 'Gemini' : provider === 'codex-cli' ? 'Codex' : 'Claude'}
+            {t('modelHeader', { provider: provider === 'gemini-cli' ? 'Gemini' : provider === 'codex-cli' ? 'Codex' : 'Claude' })}
           </div>
           {PROVIDER_NOTICE[provider] && (
             <div className="mb-2 px-3 py-2 rounded-[10px] text-[12px]"
@@ -149,7 +151,7 @@ export default function MobileChatSheet({
 
           {/* Effort */}
           <div className="font-mono text-[11px] uppercase tracking-[0.12em] pt-5 pb-2 px-1"
-            style={{ color: 'var(--muted)' }}>Effort</div>
+            style={{ color: 'var(--muted)' }}>{t('effortHeader')}</div>
           <div className="flex gap-2 flex-wrap">
             {EFFORTS.map(e => {
               const on = effort === e.value;
@@ -170,7 +172,7 @@ export default function MobileChatSheet({
 
           {/* Quick actions */}
           <div className="font-mono text-[11px] uppercase tracking-[0.12em] pt-5 pb-2 px-1"
-            style={{ color: 'var(--muted)' }}>Быстрые действия</div>
+            style={{ color: 'var(--muted)' }}>{t('quickActionsHeader')}</div>
           <div className="rounded-[14px] overflow-hidden"
             style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
             {/* Файлы устройства (скрыто если колбек не передан — теперь через slash /files) */}
@@ -180,7 +182,7 @@ export default function MobileChatSheet({
                 className="w-full flex items-center gap-3 px-4 py-3.5 text-left text-[15px]"
                 style={{ borderBottom: '1px solid var(--border)' }}>
                 <span className="w-6 text-center font-mono opacity-85">📁</span>
-                <span className="flex-1">Файлы устройства</span>
+                <span className="flex-1">{t('deviceFiles')}</span>
                 <span className="font-mono text-[11.5px]" style={{ color: 'var(--muted)' }}>⌘F</span>
               </button>
             )}
@@ -192,7 +194,7 @@ export default function MobileChatSheet({
                 className="w-full flex items-center gap-3 px-4 py-3.5 text-left text-[15px]"
                 style={{ borderBottom: '1px solid var(--border)' }}>
                 <span className="w-6 text-center font-mono opacity-85">&gt;_</span>
-                <span className="flex-1">Terminal</span>
+                <span className="flex-1">{t('terminal')}</span>
                 <span className="font-mono text-[11.5px]" style={{ color: 'var(--muted)' }}>⌘T</span>
               </button>
             )}
@@ -204,7 +206,7 @@ export default function MobileChatSheet({
               style={{ borderBottom: commandsOpen ? '1px solid var(--border)' : '1px solid var(--border)' }}
               aria-expanded={commandsOpen}>
               <span className="w-6 text-center font-mono opacity-85">/</span>
-              <span className="flex-1">Все slash-команды</span>
+              <span className="flex-1">{t('allSlashCommands')}</span>
               <span className="font-mono text-[11.5px] transition-transform duration-200"
                 style={{
                   color: 'var(--muted)',
@@ -255,8 +257,8 @@ export default function MobileChatSheet({
             <button type="button" disabled
               className="w-full flex items-center gap-3 px-4 py-3.5 text-left text-[15px] opacity-50">
               <span className="w-6 text-center font-mono opacity-85">📎</span>
-              <span className="flex-1">Прикрепить файл</span>
-              <span className="font-mono text-[11.5px]" style={{ color: 'var(--muted)' }}>soon</span>
+              <span className="flex-1">{t('attachFile')}</span>
+              <span className="font-mono text-[11.5px]" style={{ color: 'var(--muted)' }}>{t('soonBadge')}</span>
             </button>
           </div>
         </div>

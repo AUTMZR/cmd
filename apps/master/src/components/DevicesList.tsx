@@ -16,6 +16,7 @@
 import type { DeviceSheetDevice } from './DeviceSheet';
 import { effectiveIntent } from '@/lib/device-intent';
 import { Plus, MonitorSmartphone, RefreshCw } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export interface DevicesListProps {
   devices: DeviceSheetDevice[];
@@ -28,6 +29,7 @@ export interface DevicesListProps {
 }
 
 export default function DevicesList({ devices, onOpen, onAdd, onReload }: DevicesListProps) {
+  const t = useTranslations('device.list');
   // Empty state — большая иконка + primary CTA
   if (devices.length === 0) {
     return (
@@ -38,9 +40,9 @@ export default function DevicesList({ devices, onOpen, onAdd, onReload }: Device
         >
           <MonitorSmartphone size={36} style={{ color: 'var(--muted)' }} strokeWidth={1.5} />
         </div>
-        <h2 className="text-lg font-semibold mb-1.5">Ни одного устройства</h2>
+        <h2 className="text-lg font-semibold mb-1.5">{t('emptyTitle')}</h2>
         <p className="text-[13px] mb-6 max-w-[280px]" style={{ color: 'var(--muted)' }}>
-          Подключи сервер или комп — через одну команду в терминале.
+          {t('emptySubtitle')}
         </p>
         <button
           onClick={onAdd}
@@ -52,7 +54,7 @@ export default function DevicesList({ devices, onOpen, onAdd, onReload }: Device
           }}
         >
           <Plus size={16} />
-          Подключить первое устройство
+          {t('emptyCta')}
         </button>
       </div>
     );
@@ -66,9 +68,9 @@ export default function DevicesList({ devices, onOpen, onAdd, onReload }: Device
         style={{ background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}
       >
         <div>
-          <div className="text-[15px] font-semibold leading-tight">Устройства</div>
+          <div className="text-[15px] font-semibold leading-tight">{t('title')}</div>
           <div className="font-mono text-[11px] mt-0.5" style={{ color: 'var(--muted)' }}>
-            {devices.filter((d) => d.online).length}/{devices.length} online
+            {t('onlineSummary', { online: devices.filter((d) => d.online).length, total: devices.length })}
           </div>
         </div>
         <div className="flex items-center gap-1.5">
@@ -77,8 +79,8 @@ export default function DevicesList({ devices, onOpen, onAdd, onReload }: Device
               onClick={onReload}
               className="w-10 h-10 rounded-lg flex items-center justify-center"
               style={{ color: 'var(--muted)' }}
-              aria-label="Обновить"
-              title="Обновить"
+              aria-label={t('refresh')}
+              title={t('refresh')}
             >
               <RefreshCw size={16} />
             </button>
@@ -93,7 +95,7 @@ export default function DevicesList({ devices, onOpen, onAdd, onReload }: Device
             }}
           >
             <Plus size={14} />
-            Подключить
+            {t('connect')}
           </button>
         </div>
       </div>
@@ -115,6 +117,7 @@ function DeviceCard({
   device: DeviceSheetDevice;
   onOpen: () => void;
 }) {
+  const t = useTranslations('device');
   const role = effectiveIntent(device);
   const isClaudeRole = role === 'claude';
 
@@ -204,7 +207,7 @@ function DeviceCard({
               className="font-mono text-[11px] mt-1.5 truncate"
               style={{ color: 'var(--muted)' }}
             >
-              корень: {device.root_path}
+              {t('rootLabel')}: {device.root_path}
             </div>
           )}
         </div>
@@ -233,14 +236,15 @@ function AgentChip({
   status: 'ready' | 'no-login' | 'not-installed' | 'unknown';
   preferred: boolean;
 }) {
+  const t = useTranslations('device.agentChip');
   const color =
     status === 'ready' ? 'var(--ok, #047857)' :
     status === 'no-login' ? 'var(--warn, #b45309)' :
     'var(--muted)';
   const text =
     status === 'ready' ? '✓' :
-    status === 'no-login' ? '⚠ нужен login' :
-    status === 'not-installed' ? 'настроить' :
+    status === 'no-login' ? `⚠ ${t('needLogin')}` :
+    status === 'not-installed' ? t('setup') :
     '—';
   return (
     <span

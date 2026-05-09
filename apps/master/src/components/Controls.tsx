@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { MODELS as MODEL_CATALOG, DEFAULT_MODEL, PROVIDER_NOTICE, normalizeProvider, type Provider, isValidModel } from '@/lib/models';
 
 // ---------------- Data ----------------
@@ -147,6 +148,7 @@ export function ModelEffortPill({
   onChange: (m: ModelValue, e: EffortValue) => void;
   provider?: Provider;
 }) {
+  const t = useTranslations('app.welcome');
   const { open, setOpen, ref } = usePopover();
   const modelsForProvider = MODEL_CATALOG[provider];
 
@@ -190,7 +192,7 @@ export function ModelEffortPill({
           {/* Models */}
           <div className="flex items-center justify-between px-2 py-1.5">
             <div className="text-[11px] uppercase tracking-wider" style={{ color: 'var(--muted)' }}>
-              Модель · {providerLabel}
+              {t('statModel')} · {providerLabel}
             </div>
             <div className="flex gap-1"><Kbd>⇧</Kbd><Kbd>⌘</Kbd><Kbd>I</Kbd></div>
           </div>

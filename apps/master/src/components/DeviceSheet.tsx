@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Settings as SettingsIcon, FolderOpen, Folder, Plug, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import DeviceBrowser from './DeviceBrowser';
 import { effectiveIntent, type DeviceIntent } from '@/lib/device-intent';
 import type { Provider } from '@/lib/models';
@@ -51,6 +52,8 @@ export default function DeviceSheet({
   onOpenSettings: () => void;
   onCreateProject?: (deviceId: string, path: string) => void;
 }) {
+  const t = useTranslations('device.sheet');
+  const td = useTranslations('device');
   const [browseOpen, setBrowseOpen] = useState(false);
   const [editRootOpen, setEditRootOpen] = useState(false);
   const [installClaude, setInstallClaude] = useState(false);
@@ -85,7 +88,7 @@ export default function DeviceSheet({
   }
 
   async function deleteDevice() {
-    if (!confirm('Отключить устройство? Агент потеряет токен.')) return;
+    if (!confirm(t('confirmDisconnect'))) return;
     await fetch('/api/devices', {
       method: 'DELETE', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: device.id }),
@@ -122,7 +125,7 @@ export default function DeviceSheet({
                 <div className="font-semibold text-[15px] truncate">{device.name}</div>
                 <span className="text-[10px] px-1.5 py-0.5 rounded-full shrink-0"
                   style={{ background: device.online ? 'var(--ok)' : 'var(--danger)', color: '#fff' }}>
-                  {device.online ? 'online' : 'offline'}
+                  {device.online ? td('online') : td('offline')}
                 </span>
               </div>
               <div className="text-[11.5px] font-mono truncate" style={{ color: 'var(--muted)' }}>
@@ -131,7 +134,7 @@ export default function DeviceSheet({
               </div>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5" aria-label="Закрыть" style={{ color: 'var(--muted)' }}>
+          <button onClick={onClose} className="p-1.5" aria-label={t('close')} style={{ color: 'var(--muted)' }}>
             <X size={18} />
           </button>
         </div>
@@ -142,7 +145,7 @@ export default function DeviceSheet({
           {isClaudeRole && device.online && (
             <div className="p-5" style={{ borderBottom: '1px solid var(--border)' }}>
               <div className="text-xs uppercase tracking-wider mb-3" style={{ color: 'var(--muted)' }}>
-                AI-агенты
+                {t('agentsHeader')}
               </div>
 
               {/* Claude row */}
@@ -151,31 +154,31 @@ export default function DeviceSheet({
                 <div className="flex-1 min-w-0">
                   <div className="text-[13.5px] font-medium">Claude Code</div>
                   <div className="text-[11.5px] font-mono" style={{ color: 'var(--muted)' }}>
-                    {claudeInstalled && claudeLoggedIn && <span style={{ color: 'var(--ok)' }}>✓ v{device.agent_version} · авторизован</span>}
-                    {claudeInstalled && !claudeLoggedIn && <span style={{ color: 'var(--warn)' }}>⚠ v{device.agent_version} · нет login</span>}
-                    {device.agent_installed === false && <span style={{ color: 'var(--danger)' }}>❌ не установлен</span>}
-                    {claudeLegacy && !claudeLoggedIn && <span style={{ color: 'var(--warn)' }}>⚠ нет login (статус неизвестен)</span>}
+                    {claudeInstalled && claudeLoggedIn && <span style={{ color: 'var(--ok)' }}>✓ v{device.agent_version} · {t('claudeAuthorized')}</span>}
+                    {claudeInstalled && !claudeLoggedIn && <span style={{ color: 'var(--warn)' }}>⚠ v{device.agent_version} · {t('claudeNoLogin')}</span>}
+                    {device.agent_installed === false && <span style={{ color: 'var(--danger)' }}>❌ {t('claudeNotInstalled')}</span>}
+                    {claudeLegacy && !claudeLoggedIn && <span style={{ color: 'var(--warn)' }}>⚠ {t('claudeNoLoginUnknown')}</span>}
                   </div>
                 </div>
                 {claudeInstalled && !claudeLoggedIn && (
                   <button onClick={() => setLoginClaude(true)}
                     className="text-[11.5px] px-3 py-1 rounded-full shrink-0"
                     style={{ background: 'var(--accent)', color: 'var(--bg)' }}>
-                    🔐 Войти
+                    🔐 {t('signIn')}
                   </button>
                 )}
                 {device.agent_installed === false && (
                   <button onClick={() => setInstallClaude(true)}
                     className="text-[11.5px] px-3 py-1 rounded-full shrink-0"
                     style={{ background: 'var(--accent)', color: 'var(--bg)' }}>
-                    📥 Установить
+                    📥 {t('install')}
                   </button>
                 )}
                 {claudeLegacy && !claudeLoggedIn && (
                   <button onClick={() => setLoginClaude(true)}
                     className="text-[11.5px] px-3 py-1 rounded-full shrink-0"
                     style={{ background: 'var(--accent)', color: 'var(--bg)' }}>
-                    🔐 Войти
+                    🔐 {t('signIn')}
                   </button>
                 )}
               </div>
@@ -186,9 +189,9 @@ export default function DeviceSheet({
                 <div className="flex-1 min-w-0">
                   <div className="text-[13.5px] font-medium">Gemini CLI</div>
                   <div className="text-[11.5px] font-mono" style={{ color: 'var(--muted)' }}>
-                    {geminiInstalled && geminiLoggedIn && <span style={{ color: 'var(--ok)' }}>✓ v{device.gemini_version} · готов</span>}
-                    {geminiInstalled && !geminiLoggedIn && <span style={{ color: 'var(--warn)' }}>⚠ v{device.gemini_version} · нет API-ключа</span>}
-                    {!geminiInstalled && <span style={{ color: 'var(--muted)' }}>не установлен</span>}
+                    {geminiInstalled && geminiLoggedIn && <span style={{ color: 'var(--ok)' }}>✓ v{device.gemini_version} · {t('geminiReady')}</span>}
+                    {geminiInstalled && !geminiLoggedIn && <span style={{ color: 'var(--warn)' }}>⚠ v{device.gemini_version} · {t('geminiNoApiKey')}</span>}
+                    {!geminiInstalled && <span style={{ color: 'var(--muted)' }}>{t('geminiNotInstalled')}</span>}
                   </div>
                 </div>
                 <button onClick={() => setSetupGemini(true)}
@@ -198,7 +201,7 @@ export default function DeviceSheet({
                     color: geminiInstalled && geminiLoggedIn ? 'var(--fg)' : 'var(--bg)',
                     border: geminiInstalled && geminiLoggedIn ? '1px solid var(--border)' : 'none',
                   }}>
-                  {geminiInstalled && geminiLoggedIn ? 'Обновить ключ' : geminiInstalled ? '🔑 Настроить' : '📥 Установить'}
+                  {geminiInstalled && geminiLoggedIn ? t('updateKey') : geminiInstalled ? `🔑 ${t('setup')}` : `📥 ${t('install')}`}
                 </button>
               </div>
 
@@ -208,9 +211,7 @@ export default function DeviceSheet({
                   style={{ background: 'var(--accent-light)', color: 'var(--fg-2)', border: '1px solid var(--border)' }}>
                   <span style={{ fontSize: 13 }}>🌍</span>
                   <span>
-                    <b>Gemini API заблокирован Google для ряда стран</b> (Россия, Китай, Иран и др.).
-                    Если получаешь ошибку «User location is not supported» — нужен VPN на сервере или
-                    отдельный агент в неблокированной локации.
+                    <b>{t('geminiRegionTitle')}</b> {t('geminiRegionBody')}
                   </span>
                 </div>
               )}
@@ -218,7 +219,7 @@ export default function DeviceSheet({
               {/* Default-agent селектор */}
               {(claudeLoggedIn || geminiLoggedIn || codexLoggedIn) && (
                 <div className="flex items-center gap-2 mt-3 pt-3" style={{ borderTop: '1px dashed var(--border)' }}>
-                  <span className="text-[11.5px]" style={{ color: 'var(--muted)' }}>По умолчанию:</span>
+                  <span className="text-[11.5px]" style={{ color: 'var(--muted)' }}>{t('defaultLabel')}</span>
                   {([
                     { id: 'claude-code', label: '🤖 Claude', ready: claudeLoggedIn },
                     { id: 'gemini-cli',  label: '✨ Gemini', ready: geminiLoggedIn },
@@ -247,7 +248,7 @@ export default function DeviceSheet({
           {/* Project root */}
           <div className="p-5" style={{ borderBottom: '1px solid var(--border)' }}>
             <div className="text-xs uppercase tracking-wider mb-3" style={{ color: 'var(--muted)' }}>
-              Корень проектов
+              {t('rootHeader')}
             </div>
             {device.root_path ? (
               <div className="flex items-center gap-2">
@@ -259,7 +260,7 @@ export default function DeviceSheet({
                   disabled={!device.online}
                   className="text-[11.5px] px-3 py-1.5 rounded-full shrink-0 disabled:opacity-40"
                   style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
-                  Сменить
+                  {t('change')}
                 </button>
               </div>
             ) : (
@@ -267,7 +268,7 @@ export default function DeviceSheet({
                 disabled={!device.online}
                 className="w-full text-[12.5px] px-3 py-2 rounded-lg disabled:opacity-40"
                 style={{ background: 'var(--surface-2)', border: '1px dashed var(--border)', color: 'var(--muted)' }}>
-                Корень не задан · выбрать папку
+                {t('rootNotSet')}
               </button>
             )}
           </div>
@@ -278,33 +279,33 @@ export default function DeviceSheet({
               disabled={!device.online}
               className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[13px] disabled:opacity-40"
               style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
-              <FolderOpen size={14} /> Файлы
+              <FolderOpen size={14} /> {t('files')}
             </button>
             {role === 'claude' ? (
               <button onClick={() => setIntent('fs-only')}
                 className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[13px]"
                 style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
-                <Folder size={14} /> Сделать files-only
+                <Folder size={14} /> {t('makeFsOnly')}
               </button>
             ) : (
               <button onClick={() => setIntent('claude')}
                 className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[13px]"
                 style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
-                🤖 Сделать claude
+                🤖 {t('makeClaude')}
               </button>
             )}
             {device.intent && device.intent !== 'auto' && (
               <button onClick={() => setIntent('auto')}
                 className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[12.5px]"
                 style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--muted)' }}
-                title="Определять автоматически по agent_logged_in">
+                title={t('autoTitle')}>
                 ↻ auto
               </button>
             )}
             <button onClick={deleteDevice}
               className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[13px]"
               style={{ background: 'var(--danger-bg)', color: 'var(--danger)' }}>
-              <Plug size={14} /> Отключить
+              <Plug size={14} /> {t('disconnect')}
             </button>
           </div>
 
@@ -313,7 +314,7 @@ export default function DeviceSheet({
             <button onClick={() => { onClose(); onOpenSettings(); }}
               className="w-full flex items-center justify-center gap-2 text-[12.5px] py-1.5 rounded-lg"
               style={{ color: 'var(--muted)' }}>
-              <SettingsIcon size={13} /> Все настройки (тема, invite-коды, аккаунт)
+              <SettingsIcon size={13} /> {t('allSettings')}
             </button>
           </div>
         </div>
@@ -336,7 +337,7 @@ export default function DeviceSheet({
       {editRootOpen && (
         <DeviceBrowser
           deviceId={device.id}
-          deviceName={`${device.name} · выбор корня`}
+          deviceName={`${device.name} · ${t('pickRoot')}`}
           initialPath={device.root_path || null}
           onClose={() => setEditRootOpen(false)}
           onPick={async (path) => {

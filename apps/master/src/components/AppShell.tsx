@@ -13,6 +13,7 @@ import { COMMANDS, matchCommands, parseSlash, findCommand } from './slashCommand
 import { ModePill, ModelEffortPill, MODELS, MODES, EFFORTS, normalizeModel, MODEL_CATALOG, DEFAULT_MODEL, normalizeProvider, type ModelValue, type EffortValue, type ModeValue, type Provider } from './Controls';
 import { effectiveIntent, type DeviceIntent } from '@/lib/device-intent';
 import { useSpeechRecognition } from '@/lib/useSpeechRecognition';
+import { useTranslations } from 'next-intl';
 import MobileTabBar, { type MobileTab } from './MobileTabBar';
 import DevicesList from './DevicesList';
 import TrialBanner from './TrialBanner';
@@ -72,6 +73,7 @@ function formatVoiceTimer(secs: number): string {
 }
 
 export default function AppShell({ user }: { user: User }) {
+  const t = useTranslations('app');
   const [theme, setTheme] = useState<typeof THEMES[number]>('soft');
   const [devices, setDevices] = useState<Device[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -97,7 +99,7 @@ export default function AppShell({ user }: { user: User }) {
   });
   const startVoice = useCallback(() => {
     if (!speech.supported) {
-      alert('Браузер не поддерживает голосовой ввод. Попробуй Chrome или Safari (iOS 14.5+).');
+      alert(t('voiceUnsupported'));
       return;
     }
     const ta = taRef.current;
@@ -234,13 +236,13 @@ export default function AppShell({ user }: { user: User }) {
     setTools([]);
   }
   async function deleteSession(sid: string) {
-    if (!confirm('Удалить чат?')) return;
+    if (!confirm(t('confirmDeleteSession'))) return;
     await fetch('/api/sessions', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: sid }) });
     if (activeSessionId === sid) setActiveSessionId(null);
     loadSessions();
   }
   async function deleteProject(id: string) {
-    if (!confirm('Удалить проект?')) return;
+    if (!confirm(t('confirmDeleteProject'))) return;
     await fetch('/api/projects', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
     if (activeProjectId === id) setActiveProjectId(null);
     loadProjects();
@@ -274,20 +276,20 @@ export default function AppShell({ user }: { user: User }) {
         setActiveSessionId(null); setMessages([]); setTools([]); setInput(''); return true;
       case '/help': {
         const help = COMMANDS.map(c => `- **${c.name}**${c.args ? ` \`${c.args}\`` : ''} — ${c.description}`).join('\n');
-        addMsg('user', text); addMsg('assistant', `### Slash-команды\n\n${help}`); setInput(''); return true;
+        addMsg('user', text); addMsg('assistant', `### ${t('slashHelpHeader')}\n\n${help}`); setInput(''); return true;
       }
       case '/files': setRightTab('files'); setRightOpen(true); setMobilePane('files'); setInput(''); return true;
       case '/terminal': setRightTab('terminal'); setRightOpen(true); setMobilePane('terminal'); setInput(''); return true;
       case '/settings': setShowSettings(true); setInput(''); return true;
       case '/cd': {
-        if (!parsed.args || !activeProjectId) { addMsg('assistant', '❌ `/cd ПУТЬ`'); setInput(''); return true; }
+        if (!parsed.args || !activeProjectId) { addMsg('assistant', `❌ ${t('slashCdUsage')}`); setInput(''); return true; }
         addMsg('user', text);
         const r = await fetch('/api/projects', {
           method: 'PUT', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: activeProjectId, path: parsed.args }),
         });
-        if (!r.ok) { const j = await r.json().catch(() => ({})); addMsg('assistant', `❌ ${j.error || 'Ошибка'}`); }
-        else { addMsg('assistant', `✓ папка → \`${parsed.args}\``); loadProjects(); }
+        if (!r.ok) { const j = await r.json().catch(() => ({})); addMsg('assistant', `❌ ${j.error || t('errorGeneric')}`); }
+        else { addMsg('assistant', t('slashCdOk', { path: parsed.args })); loadProjects(); }
         setInput(''); return true;
       }
       case '/!': case '/exec': {
@@ -297,7 +299,7 @@ export default function AppShell({ user }: { user: User }) {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ projectId: activeProjectId, command: parsed.args }),
         });
-        if (!res.ok || !res.body) { addMsg('assistant', '❌ ошибка'); setInput(''); return true; }
+        if (!res.ok || !res.body) { addMsg('assistant', `❌ ${t('errorGeneric').toLowerCase()}`); setInput(''); return true; }
         let out = '';
         const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = '';
         while (true) {
@@ -313,7 +315,7 @@ export default function AppShell({ user }: { user: User }) {
             } catch {}
           }
         }
-        addMsg('assistant', '```\n' + (out || '(пусто)') + '\n```');
+        addMsg('assistant', '```\n' + (out || t('empty')) + '\n```');
         setInput(''); return true;
       }
     }
@@ -323,7 +325,7 @@ export default function AppShell({ user }: { user: User }) {
   const sendMessage = useCallback(async (text: string, overrideModel?: string) => {
     if (!text.trim() || sending) return;
     if (await handleSlash(text)) return;
-    if (!activeProjectId) { alert('Выбери проект слева'); return; }
+    if (!activeProjectId) { alert(t('selectProjectFirst')); return; }
     setMessages((m) => [...m, { role: 'user', content: text }, { role: 'assistant', content: '' }]);
     setInput(''); setSending(true); setTools([]);
     let assistantText = ''; let newSid: string | null = null;
@@ -387,7 +389,7 @@ export default function AppShell({ user }: { user: User }) {
           return m;
         });
       } else {
-        setMessages((m) => { const c = [...m]; c[c.length - 1] = { role: 'assistant', content: `❌ ${e.message || 'Ошибка'}` }; return c; });
+        setMessages((m) => { const c = [...m]; c[c.length - 1] = { role: 'assistant', content: `❌ ${e.message || t('errorGeneric')}` }; return c; });
       }
     } finally { setSending(false); }
   }, [sending, activeProjectId, activeSessionId, model, permissionMode, effort, handleSlash]);
@@ -427,7 +429,7 @@ export default function AppShell({ user }: { user: User }) {
 
   function fmtDuration(ms: number): string {
     const s = Math.floor(ms / 1000);
-    if (s < 60) return `${s}с`;
+    if (s < 60) return `${s}s`;
     const m = Math.floor(s / 60);
     if (m < 60) return `${m}:${String(s % 60).padStart(2, '0')}`;
     return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
@@ -497,22 +499,22 @@ export default function AppShell({ user }: { user: User }) {
     <div className="flex flex-col h-full" style={{ background: 'var(--bg)' }}>
       <div className="px-4 py-3 flex items-center justify-between"
         style={{ borderBottom: '1px solid var(--border)' }}>
-        <div className="text-[15px] font-semibold">Чаты</div>
+        <div className="text-[15px] font-semibold">{t('chats.title')}</div>
         <div className="font-mono text-[11px]" style={{ color: 'var(--muted)' }}>
-          {sessions.length} {sessions.length === 1 ? 'чат' : 'чатов'}
+          {t(sessions.length === 1 ? 'chats.countOne' : 'chats.countMany', { count: sessions.length })}
         </div>
       </div>
       <div className="flex-1 overflow-y-auto">
         {sessions.length === 0 ? (
           <EmptyState
             icon={MessagesSquare}
-            title="Ни одного чата"
+            title={t('chats.emptyTitle')}
             subtitle={
               projects.length === 0
-                ? 'Сначала создай проект, потом сможешь начать чат'
-                : 'Открой проект и напиши первое сообщение'
+                ? t('chats.emptyNoProjects')
+                : t('chats.emptyHasProjects')
             }
-            actionLabel={projects.length === 0 ? 'Создать проект' : 'Открыть Home'}
+            actionLabel={projects.length === 0 ? t('chats.emptyCtaCreateProject') : t('chats.emptyCtaOpenHome')}
             onAction={() => {
               if (projects.length === 0) setShowAddProject(true);
               else setMobileTab('home');
@@ -620,10 +622,10 @@ export default function AppShell({ user }: { user: User }) {
         <div className="flex-1 overflow-y-auto px-1.5 py-2">
           {/* Projects section */}
           <div className="flex items-center justify-between px-2 pt-2 pb-1.5">
-            <div className="font-mono text-[10px] uppercase tracking-[0.12em]" style={{ color: 'var(--muted)' }}>проекты</div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.12em]" style={{ color: 'var(--muted)' }}>{t('sidebar.projectsLabel')}</div>
             <button onClick={() => setShowAddProject(true)}
               className="w-5 h-5 rounded flex items-center justify-center text-[14px] hover:bg-[var(--surface-2)]"
-              style={{ color: 'var(--muted)' }} title="Новый проект">
+              style={{ color: 'var(--muted)' }} title={t('sidebar.newProjectTitle')}>
               +
             </button>
           </div>
@@ -631,7 +633,7 @@ export default function AppShell({ user }: { user: User }) {
           {projects.length === 0 && (
             <div className="px-3 py-5 text-center">
               <div className="font-mono text-[10.5px]" style={{ color: 'var(--muted)' }}>
-                {devices.length === 0 ? '└─ нужно подключить устройство' : '└─ создай первый проект'}
+                {devices.length === 0 ? t('sidebar.needDevice') : t('sidebar.createFirstProject')}
               </div>
             </div>
           )}
@@ -675,7 +677,7 @@ export default function AppShell({ user }: { user: User }) {
                       className="w-full flex items-center gap-1.5 px-2 py-1 text-[11.5px] rounded-md hover:bg-[var(--surface-2)]"
                       style={{ color: 'var(--muted)' }}>
                       <span className="font-mono w-3 inline-block">{plist.length === 0 ? '└─' : '├─'}</span>
-                      <Plus size={10} /> новый чат
+                      <Plus size={10} /> {t('sidebar.newChat')}
                     </button>
                     {plist.map((s, idx) => {
                       const isLast = idx === plist.length - 1;
@@ -706,11 +708,11 @@ export default function AppShell({ user }: { user: User }) {
           {/* Devices section — split by role */}
           <div className="flex items-center justify-between px-2 pt-4 pb-1.5">
             <div className="font-mono text-[10px] uppercase tracking-[0.12em]" style={{ color: 'var(--muted)' }}>
-              устройства <span className="ml-1" style={{ color: 'var(--border-strong)' }}>·</span> <span style={{ color: 'var(--fg-2)' }}>{onlineCount}/{devices.length}</span>
+              {t('sidebar.devicesLabel')} <span className="ml-1" style={{ color: 'var(--border-strong)' }}>·</span> <span style={{ color: 'var(--fg-2)' }}>{onlineCount}/{devices.length}</span>
             </div>
             <button onClick={() => setShowAddDevice(true)}
               className="w-5 h-5 rounded flex items-center justify-center text-[14px] hover:bg-[var(--surface-2)]"
-              style={{ color: 'var(--muted)' }} title="Подключить устройство">
+              style={{ color: 'var(--muted)' }} title={t('sidebar.addDeviceTitle')}>
               +
             </button>
           </div>
@@ -720,7 +722,7 @@ export default function AppShell({ user }: { user: User }) {
               className="w-full flex items-center gap-2 px-2 py-[5px] rounded-md text-[12px] hover:bg-[var(--surface-2)]"
               style={{ color: 'var(--muted)' }}>
               <span className="font-mono w-3 inline-block">└─</span>
-              нет подключений
+              {t('sidebar.noConnections')}
             </button>
           ) : (() => {
             const claudeDevs = devices.filter(d => effectiveIntent(d) === 'claude');
@@ -737,7 +739,7 @@ export default function AppShell({ user }: { user: User }) {
                   {d.os === 'darwin' ? 'mac' : d.os === 'linux' ? 'linux' : d.os === 'win32' ? 'win' : d.kind}
                 </span>
                 {role === 'claude' && d.online && d.agent_logged_in === false && (
-                  <span className="font-mono text-[9.5px] shrink-0" title="нет claude login" style={{ color: 'var(--warn)' }}>⚠</span>
+                  <span className="font-mono text-[9.5px] shrink-0" title={t('sidebar.missingClaudeLogin')} style={{ color: 'var(--warn)' }}>⚠</span>
                 )}
               </button>
             );
@@ -769,7 +771,7 @@ export default function AppShell({ user }: { user: User }) {
         <button onClick={() => setShowSettings(true)}
           className="flex items-center gap-2.5 px-3 py-3 w-full text-left hover:bg-[var(--surface-2)] transition-colors"
           style={{ borderTop: '1px solid var(--border)' }}
-          title="Профиль и настройки"
+          title={t('sidebar.profileTitle')}
         >
           <div className="w-7 h-7 rounded-full flex items-center justify-center font-mono text-[12px] font-semibold shrink-0"
             style={{ background: 'var(--accent)', color: 'var(--bg)' }}>
@@ -809,7 +811,7 @@ export default function AppShell({ user }: { user: User }) {
                 onClick={() => { setActiveSessionId(null); setMessages([]); setTools([]); }}
                 className="md:hidden w-10 h-10 rounded-md inline-flex items-center justify-center"
                 style={{ color: 'var(--fg-2)' }}
-                aria-label="Назад к проекту"
+                aria-label={t('topbar.backToProject')}
               >
                 <ArrowLeft size={18} />
               </button>
@@ -818,13 +820,13 @@ export default function AppShell({ user }: { user: User }) {
                 onClick={() => setActiveProjectId(null)}
                 className="md:hidden w-10 h-10 rounded-md inline-flex items-center justify-center"
                 style={{ color: 'var(--fg-2)' }}
-                aria-label="Назад к Home"
+                aria-label={t('topbar.backToHome')}
               >
                 <ArrowLeft size={18} />
               </button>
             ) : (
               <button onClick={() => setDrawerOpen(true)} className="md:hidden btn btn-icon btn-ghost"
-                aria-label="Меню">
+                aria-label={t('topbar.menu')}>
                 <Menu size={18} />
               </button>
             )}
@@ -882,7 +884,7 @@ export default function AppShell({ user }: { user: User }) {
               <button type="button" onClick={() => setMobileSheetOpen(true)}
                 className="md:hidden font-mono inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] shrink-0"
                 style={{ background: 'var(--surface)', color: 'var(--fg)', border: '1px solid var(--border)', minHeight: 36 }}
-                aria-label={`Режим: ${permissionMode}`}
+                aria-label={t('topbar.modeAria', { mode: permissionMode })}
                 title={permissionMode}>
                 <span className="inline-block w-[7px] h-[7px] rounded-full"
                   style={{
@@ -892,14 +894,14 @@ export default function AppShell({ user }: { user: User }) {
                       permissionMode === 'plan' ? '#7c8ef0' :
                       'var(--muted)',
                   }} />
-                <span>режим</span>
+                <span>{t('topbar.mode')}</span>
               </button>
             )}
             {activeProjectId && (
               <button onClick={() => { setActiveSessionId(null); setMessages([]); setTools([]); }}
                 className="font-mono inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px]"
                 style={{ background: 'var(--accent)', color: 'var(--bg)', border: '1px solid var(--accent)', minHeight: 36 }}>
-                <Plus size={11} /> Чат
+                <Plus size={11} /> {t('topbar.newChat')}
                 <span className="hidden md:inline text-[9.5px] px-1 py-px rounded" style={{ background: 'rgba(255,255,255,.14)' }}>⌘N</span>
               </button>
             )}
@@ -909,7 +911,7 @@ export default function AppShell({ user }: { user: User }) {
               className="hidden md:inline-flex font-mono items-center gap-1 px-2.5 py-1 rounded-md text-[12px]"
               style={{ background: 'var(--surface)', color: 'var(--fg)', border: '1px solid var(--border)' }}>
               <Files size={11} />
-              <span>{rightOpen ? 'Скрыть' : 'Файлы'}</span>
+              <span>{rightOpen ? t('topbar.hideFiles') : t('topbar.showFiles')}</span>
             </button>
           </div>
         </div>
@@ -922,35 +924,35 @@ export default function AppShell({ user }: { user: User }) {
             <div className="animate-fadeIn">
               <div className="max-w-3xl mx-auto px-6 py-10">
                 <h1 className="text-[26px] font-semibold tracking-[-0.025em] flex items-baseline gap-2.5 flex-wrap">
-                  Привет, {user.name?.split(' ')[0] || user.email.split('@')[0]}
+                  {t('welcome.greeting', { name: user.name?.split(' ')[0] || user.email.split('@')[0] })}
                   <span className="font-mono text-[12px] px-2 py-0.5 rounded font-normal"
                     style={{ background: 'var(--surface-2)', color: 'var(--muted)', border: '1px solid var(--border)' }}>v0.1.0</span>
                 </h1>
                 <p className="font-mono text-[12.5px] mt-2 mb-7 flex items-center gap-3 flex-wrap" style={{ color: 'var(--muted)' }}>
-                  <span><span style={{ color: 'var(--ok)' }}>●</span> {onlineCount}/{devices.length} устройств online</span>
+                  <span><span style={{ color: 'var(--ok)' }}>●</span> {t('welcome.summaryOnline', { online: onlineCount, total: devices.length })}</span>
                   <span style={{ color: 'var(--border-strong)' }}>·</span>
-                  <span>{projects.length} проектов</span>
+                  <span>{t('welcome.summaryProjects', { count: projects.length })}</span>
                   <span style={{ color: 'var(--border-strong)' }}>·</span>
-                  <span>{sessions.length} чатов</span>
+                  <span>{t('welcome.summaryChats', { count: sessions.length })}</span>
                 </p>
 
                 {/* Empty states / quick actions, в зависимости от состояния */}
                 {devices.length === 0 ? (
                   <EmptyState
                     icon={MonitorSmartphone}
-                    title="Подключи первое устройство"
-                    subtitle="Сервер или комп с установленным claude cli — одной командой в терминале."
-                    actionLabel="Подключить устройство"
+                    title={t('welcome.noDevicesTitle')}
+                    subtitle={t('welcome.noDevicesSubtitle')}
+                    actionLabel={t('welcome.noDevicesCta')}
                     onAction={() => setShowAddDevice(true)}
                   />
                 ) : projects.length === 0 ? (
                   <EmptyState
                     icon={FolderOpen}
-                    title="Создай первый проект"
-                    subtitle="Открой папку на одном из подключённых устройств."
-                    actionLabel="Создать проект"
+                    title={t('welcome.noProjectsTitle')}
+                    subtitle={t('welcome.noProjectsSubtitle')}
+                    actionLabel={t('welcome.noProjectsCta')}
                     onAction={() => setShowAddProject(true)}
-                    secondaryHint={`${onlineCount}/${devices.length} устройств готовы`}
+                    secondaryHint={t('welcome.devicesReady', { online: onlineCount, total: devices.length })}
                   />
                 ) : (
                   <>
@@ -958,10 +960,10 @@ export default function AppShell({ user }: { user: User }) {
                     <div className="grid grid-cols-2 sm:grid-cols-4 rounded-xl overflow-hidden mb-6"
                       style={{ border: '1px solid var(--border)', background: 'var(--bg)' }}>
                       {[
-                        { k: 'Устройств', v: `${onlineCount}/${devices.length || 0}`, sub: 'online' },
-                        { k: 'Проектов', v: projects.length.toString(), sub: 'на устройствах' },
-                        { k: 'Чатов', v: sessions.length.toString(), sub: sessions.length > 0 ? 'всего' : 'пока пусто' },
-                        { k: 'Модель', v: MODEL_CATALOG[activeProvider].find(m => m.id === normalizeModel(model))?.label || model, sub: `effort: ${effort}` },
+                        { k: t('welcome.statDevices'), v: `${onlineCount}/${devices.length || 0}`, sub: t('welcome.statOnline') },
+                        { k: t('welcome.statProjects'), v: projects.length.toString(), sub: t('welcome.statOnDevices') },
+                        { k: t('welcome.statChats'), v: sessions.length.toString(), sub: sessions.length > 0 ? t('welcome.statTotal') : t('welcome.statEmpty') },
+                        { k: t('welcome.statModel'), v: MODEL_CATALOG[activeProvider].find(m => m.id === normalizeModel(model))?.label || model, sub: t('welcome.statEffort', { effort }) },
                       ].map((c, i) => (
                         <div key={i} className="px-4 py-3"
                           style={{
@@ -983,7 +985,7 @@ export default function AppShell({ user }: { user: User }) {
                           <span className="ml-2" style={{ color: 'var(--muted)' }}>{projects.length}</span>
                         </div>
                         <button onClick={() => setShowAddProject(true)} className="font-mono text-[11px] hover:underline" style={{ color: 'var(--muted)' }}>
-                          + создать
+                          {t('welcome.createProject')}
                         </button>
                       </div>
                       <div className="space-y-px">
@@ -1002,7 +1004,7 @@ export default function AppShell({ user }: { user: User }) {
                                   <span style={{ color: dev.online ? 'var(--ok)' : 'var(--danger)' }}>●</span> {dev.name}
                                 </span>
                               )}
-                              <span className="font-mono text-[10.5px] truncate ml-auto opacity-80" style={{ color: 'var(--muted)' }}>{p.path || 'sandbox'}</span>
+                              <span className="font-mono text-[10.5px] truncate ml-auto opacity-80" style={{ color: 'var(--muted)' }}>{p.path || t('welcome.sandbox')}</span>
                               <span className="font-mono text-[11px] shrink-0" style={{ color: 'var(--muted)' }}>→</span>
                             </button>
                           );
@@ -1017,7 +1019,7 @@ export default function AppShell({ user }: { user: User }) {
                           <div className="font-mono text-[11px] uppercase tracking-[0.1em]">
                             <span style={{ color: 'var(--muted)' }}># </span>recent_chats
                           </div>
-                          <span className="font-mono text-[11px]" style={{ color: 'var(--muted)' }}>{Math.min(sessions.length, 6)} из {sessions.length}</span>
+                          <span className="font-mono text-[11px]" style={{ color: 'var(--muted)' }}>{t('welcome.outOf', { shown: Math.min(sessions.length, 6), total: sessions.length })}</span>
                         </div>
                         <div className="space-y-px">
                           {sessions.slice(0, 6).map((s, idx) => {
@@ -1042,7 +1044,7 @@ export default function AppShell({ user }: { user: User }) {
                 {/* Подсказка про девайсы (всегда внизу welcome) */}
                 {devices.length > 0 && (
                   <div className="mt-7 font-mono text-[11.5px] text-center" style={{ color: 'var(--muted)' }}>
-                    Управление устройствами — во вкладке <span style={{ color: 'var(--fg-2)' }}>Устройства</span>
+                    {t('welcome.manageDevicesHint')} <span style={{ color: 'var(--fg-2)' }}>{t('welcome.manageDevicesTab')}</span> {t('welcome.tabSuffix')}
                   </div>
                 )}
               </div>
@@ -1082,9 +1084,9 @@ export default function AppShell({ user }: { user: User }) {
                 </div>
                 <div className="space-y-1.5">
                   {[
-                    'Что в этой папке? Кратко.',
-                    'Покажи git status и опиши изменения',
-                    'Найди и покажи TODO-комментарии',
+                    t('welcome.prompt1'),
+                    t('welcome.prompt2'),
+                    t('welcome.prompt3'),
                   ].map((s, i) => (
                     <button key={s} onClick={() => sendMessage(s)}
                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-left hover:bg-[var(--surface)] animate-fadeUp"
@@ -1118,7 +1120,7 @@ export default function AppShell({ user }: { user: User }) {
                             <span className="font-mono text-[12px] w-4 shrink-0" style={{ color: 'var(--muted)' }}>{isLast ? '└─' : '├─'}</span>
                             <span className="text-[13px] truncate flex-1">{s.title}</span>
                             <span className="font-mono text-[10.5px] shrink-0" style={{ color: 'var(--muted)' }}>
-                              {new Date(s.updated_at).toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' })}
+                              {new Date(s.updated_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}
                             </span>
                             <span className="font-mono text-[11px] opacity-0 group-hover:opacity-100 shrink-0" style={{ color: 'var(--muted)' }}>→</span>
                           </button>
@@ -1131,10 +1133,10 @@ export default function AppShell({ user }: { user: User }) {
                     style={{ border: '1px dashed var(--border-strong)', color: 'var(--muted)' }}>
                     <MessageSquare size={20} className="mx-auto mb-2" style={{ opacity: 0.6 }} />
                     <div className="text-[13px] font-medium mb-0.5" style={{ color: 'var(--fg-2)' }}>
-                      Напиши первое сообщение
+                      {t('welcome.noChatsTitle')}
                     </div>
                     <div className="font-mono text-[11px]">
-                      Используй composer ниже или один из quick_prompts
+                      {t('welcome.noChatsHint')}
                     </div>
                   </div>
                 )}
@@ -1152,7 +1154,7 @@ export default function AppShell({ user }: { user: User }) {
                     color: m.role === 'user' ? 'var(--fg-2)' : 'var(--bg)',
                     border: m.role === 'user' ? '1px solid var(--border)' : 'none',
                   }}>
-                  {m.role === 'user' ? (user.name?.[0] || 'У').toUpperCase() : 'C'}
+                  {m.role === 'user' ? (user.name?.[0] || user.email[0] || 'U').toUpperCase() : 'C'}
                 </div>
                 <div className={`min-w-0 max-w-[min(85%,680px)] ${m.role === 'user' ? 'text-right' : ''}`}>
                   <div className={m.role === 'user' ? 'inline-block px-3.5 py-2 text-left' : ''}
@@ -1274,7 +1276,7 @@ export default function AppShell({ user }: { user: User }) {
                 <button type="button" onClick={cancelVoice}
                   className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors hover:bg-black/5"
                   style={{ color: 'var(--fg-2)' }}
-                  aria-label="Отмена">
+                  aria-label={t('composer.cancelVoice')}>
                   <X size={20} strokeWidth={1.6} />
                 </button>
                 <div className="flex-1 flex items-center justify-center gap-[2px] h-10 voice-waveform overflow-hidden">
@@ -1288,7 +1290,7 @@ export default function AppShell({ user }: { user: User }) {
                 <button type="button" onClick={confirmVoice}
                   className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors hover:bg-black/5"
                   style={{ color: 'var(--fg)' }}
-                  aria-label="Готово">
+                  aria-label={t('composer.doneVoice')}>
                   <Check size={20} strokeWidth={1.8} />
                 </button>
               </div>
@@ -1299,7 +1301,7 @@ export default function AppShell({ user }: { user: User }) {
                   disabled={!activeProjectId}
                   className="md:hidden w-10 h-10 rounded-full flex items-center justify-center disabled:opacity-30 shrink-0"
                   style={{ color: mobileSheetOpen ? 'var(--bg)' : 'var(--fg-2)', background: mobileSheetOpen ? 'var(--accent)' : 'transparent' }}
-                  aria-label="Настройки чата">
+                  aria-label={t('composer.chatSettings')}>
                   <Plus size={22} />
                 </button>
                 <span className="hidden md:inline font-mono text-[14px] pt-[3px] shrink-0" style={{ color: 'var(--muted)' }}>$</span>
@@ -1307,7 +1309,7 @@ export default function AppShell({ user }: { user: User }) {
                   onChange={(e) => { setInput(e.target.value); setSlashOpen(e.target.value.startsWith('/')); setSlashIdx(0); }}
                   onKeyDown={onKey} rows={1}
                   disabled={sending || !activeProjectId}
-                  placeholder={!activeProjectId ? 'Выбери проект — поле ввода станет активным' : sending ? 'Жду ответ…' : 'Сообщение…'}
+                  placeholder={!activeProjectId ? t('composer.placeholderNoProject') : sending ? t('composer.placeholderWaiting') : t('composer.placeholderDefault')}
                   className="flex-1 bg-transparent outline-none resize-none text-[16px] md:text-[14px] leading-[1.4] placeholder:opacity-50 py-2 md:pt-0.5"
                   style={{ maxHeight: 200 }} />
                 {input.trim().length === 0 && !sending ? (
@@ -1316,15 +1318,15 @@ export default function AppShell({ user }: { user: User }) {
                     disabled={!activeProjectId}
                     className="w-10 h-10 md:w-8 md:h-8 rounded-full flex items-center justify-center disabled:opacity-30 shrink-0"
                     style={{ color: 'var(--muted)', opacity: speech.supported ? 1 : 0.5 }}
-                    title={speech.supported ? 'Голосовой ввод' : 'Браузер не поддерживает голос'}
-                    aria-label="Голос">
+                    title={speech.supported ? t('composer.voiceSupported') : t('composer.voiceUnsupportedTooltip')}
+                    aria-label={t('composer.voice')}>
                     <Mic size={18} />
                   </button>
                 ) : (
                   <button onClick={() => sendMessage(input)} disabled={sending || !input.trim()}
                     className="w-10 h-10 md:w-8 md:h-8 rounded-full md:rounded-md flex items-center justify-center disabled:opacity-30 shrink-0"
                     style={{ background: 'var(--accent)', color: 'var(--bg)' }}
-                    aria-label="Отправить">
+                    aria-label={t('composer.send')}>
                     {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={14} />}
                   </button>
                 )}
@@ -1480,6 +1482,7 @@ function ErrorCard({
   details: import('@/lib/cli-error-parser').ParsedCliError;
   onRetryWithModel: (model: string) => void;
 }) {
+  const t = useTranslations('app.errorCard');
   const [showRaw, setShowRaw] = useState(false);
   const kindIcon =
     details.kind === 'quota' ? '⏱' :
@@ -1525,7 +1528,7 @@ function ErrorCard({
             <a href={details.docUrl} target="_blank" rel="noopener noreferrer"
               className="px-3 py-1.5 rounded-md text-[12px] font-medium"
               style={{ background: 'var(--surface)', color: 'var(--fg)', border: '1px solid var(--border)' }}>
-              Открыть в Google AI Studio ↗
+              {t('openInGoogleAi')}
             </a>
           )}
         </div>
@@ -1537,7 +1540,7 @@ function ErrorCard({
           onClick={() => setShowRaw(!showRaw)}
           className="text-[11px] font-mono"
           style={{ color: 'var(--muted)' }}>
-          {showRaw ? '▾ Скрыть детали' : '▸ Показать детали'}
+          {showRaw ? t('hideDetails') : t('showDetails')}
         </button>
         {showRaw && (
           <pre className="mt-1.5 p-2 rounded text-[10.5px] font-mono whitespace-pre-wrap break-all overflow-auto max-h-48"

@@ -323,6 +323,19 @@
       "failed": "发送失败。"
     }
   },
+  "mobileChat": {
+    "title": "聊天设置",
+    "subtitle": "应用于本次会话的所有消息",
+    "modeHeader": "模式",
+    "modelHeader": "模型 · {provider}",
+    "effortHeader": "Effort",
+    "quickActionsHeader": "快捷操作",
+    "deviceFiles": "设备文件",
+    "terminal": "终端",
+    "allSlashCommands": "所有 slash 命令",
+    "attachFile": "附加文件",
+    "soonBadge": "即将"
+  },
   "mobileTabs": {
     "home": "首页",
     "chats": "聊天",
@@ -418,7 +431,13 @@
     "pasteModalPlaceholder": "在此长按 → Paste",
     "willSend": "将发送:<b>{count}</b> 个字符",
     "cancel": "取消",
-    "pasteAction": "粘贴 ↵"
+    "pasteAction": "粘贴 ↵",
+    "exitedCode": "[进程已退出,代码={code}]",
+    "errorGeneric": "错误",
+    "nodePtyMissing": "✗ 设备上未安装 node-pty",
+    "runOnServer": "在服务器上执行:",
+    "restartAgent": "然后重启代理: systemctl restart autmzr-command-agent",
+    "connectFailed": "连接失败"
   },
   "invites": {
     "title": "邀请码",
@@ -452,8 +471,11 @@
     "alertPasteCreds": "粘贴 ~/.claude/.credentials.json 的内容",
     "alertNotJson": "这看起来不像 JSON。请复制整个文件。",
     "subscriptionTab": "订阅",
+    "subscriptionHint": "Pro/Max",
     "apiKeyTab": "API 密钥",
+    "apiKeyHint": "按量计费",
     "oauthTab": "OAuth",
+    "oauthHint": "仅本地",
     "subInstructionsTitle": "如何通过订阅登录",
     "subInstructionsSteps": "— 4 个步骤",
     "subStep1": "下面会自动启动 <code>claude /login</code> — 会出现一个 URL。",

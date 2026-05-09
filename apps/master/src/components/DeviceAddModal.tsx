@@ -10,6 +10,7 @@
  */
 
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import QRCode from 'qrcode';
 
 interface Props { onClose: () => void }
@@ -18,6 +19,7 @@ type Method = 'command' | 'ssh';
 type AuthType = 'password' | 'key';
 
 export default function DeviceAddModal({ onClose }: Props) {
+  const t = useTranslations('device.add');
   // Общие поля
   const [name, setName] = useState('');
   const [intent, setIntent] = useState<Intent>('claude');
@@ -43,12 +45,12 @@ export default function DeviceAddModal({ onClose }: Props) {
   const sshLogRef = useRef<HTMLDivElement | null>(null);
 
   async function createDevice(): Promise<{ id: string; token: string; connect_cmd: string } | null> {
-    if (!name.trim()) { alert('Укажи имя устройства'); return null; }
+    if (!name.trim()) { alert(t('alertNoName')); return null; }
     const r = await fetch('/api/devices', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, intent }),
     });
-    if (!r.ok) { alert('Не удалось создать устройство'); return null; }
+    if (!r.ok) { alert(t('alertCreateFailed')); return null; }
     return await r.json();
   }
 
@@ -71,9 +73,9 @@ export default function DeviceAddModal({ onClose }: Props) {
   }
 
   async function handleSshFlow() {
-    if (!sshHost.trim() || !sshUser.trim()) { alert('Заполни host и user'); return; }
-    if (sshAuthType === 'password' && !sshPassword) { alert('Введи пароль'); return; }
-    if (sshAuthType === 'key' && !sshKey) { alert('Вставь приватный SSH-ключ'); return; }
+    if (!sshHost.trim() || !sshUser.trim()) { alert(t('alertHostUser')); return; }
+    if (sshAuthType === 'password' && !sshPassword) { alert(t('alertPassword')); return; }
+    if (sshAuthType === 'key' && !sshKey) { alert(t('alertKey')); return; }
     const j = await createDevice();
     if (!j) return;
     setCmd({ connect_cmd: j.connect_cmd, id: j.id, token: j.token });
@@ -168,11 +170,11 @@ export default function DeviceAddModal({ onClose }: Props) {
         {/* Header */}
         <div className="flex items-center justify-between mb-3 shrink-0">
           <div>
-            <h3 className="text-base font-semibold">Новое устройство</h3>
+            <h3 className="text-base font-semibold">{t('title')}</h3>
             <p className="text-[11.5px]" style={{ color: 'var(--muted)' }}>
-              {step === 'form' ? 'Выбери как подключить' :
-               step === 'waiting' ? 'Жду подключения агента' :
-               'Ставлю агент по SSH…'}
+              {step === 'form' ? t('chooseHow') :
+               step === 'waiting' ? t('waitingAgent') :
+               t('installingSsh')}
             </p>
           </div>
           <button onClick={onClose} className="text-xl" style={{ color: 'var(--muted)' }}>×</button>
@@ -184,12 +186,12 @@ export default function DeviceAddModal({ onClose }: Props) {
         {/* ───── STEP: FORM ───── */}
         {step === 'form' && (
           <>
-            <label className="block text-xs mb-1" style={{ color: 'var(--muted)' }}>Имя</label>
-            <input value={name} autoFocus onChange={(e) => setName(e.target.value)} placeholder="home-mac или vpsru"
+            <label className="block text-xs mb-1" style={{ color: 'var(--muted)' }}>{t('nameLabel')}</label>
+            <input value={name} autoFocus onChange={(e) => setName(e.target.value)} placeholder={t('namePlaceholder')}
               className="w-full px-3 py-2 rounded-lg text-sm bg-transparent outline-none"
               style={{ border: '1px solid var(--border)', color: 'var(--fg)' }} />
 
-            <label className="block text-xs mt-4 mb-1.5" style={{ color: 'var(--muted)' }}>Что за устройство?</label>
+            <label className="block text-xs mt-4 mb-1.5" style={{ color: 'var(--muted)' }}>{t('intentLabel')}</label>
             <div className="flex flex-col gap-1.5">
               <button type="button" onClick={() => setIntent('claude')}
                 className="flex items-start gap-2.5 p-2.5 rounded-xl text-left"
@@ -199,9 +201,9 @@ export default function DeviceAddModal({ onClose }: Props) {
                 }}>
                 <span className="text-xl leading-none mt-0.5">🤖</span>
                 <span className="flex-1">
-                  <span className="block text-[13px] font-medium">С Claude Code</span>
+                  <span className="block text-[13px] font-medium">{t('intentClaudeTitle')}</span>
                   <span className="block text-[11px] mt-0.5" style={{ color: 'var(--muted)' }}>
-                    Здесь запускается Claude CLI. Потом — [🔐 Войти] в Settings.
+                    {t('intentClaudeBody')}
                   </span>
                 </span>
               </button>
@@ -213,9 +215,9 @@ export default function DeviceAddModal({ onClose }: Props) {
                 }}>
                 <span className="text-xl leading-none mt-0.5">📂</span>
                 <span className="flex-1">
-                  <span className="block text-[13px] font-medium">Только файлы и команды</span>
+                  <span className="block text-[13px] font-medium">{t('intentFsTitle')}</span>
                   <span className="block text-[11px] mt-0.5" style={{ color: 'var(--muted)' }}>
-                    Хранилище проектов. Claude идёт через proxy от другого устройства.
+                    {t('intentFsBody')}
                   </span>
                 </span>
               </button>
@@ -229,7 +231,7 @@ export default function DeviceAddModal({ onClose }: Props) {
                   background: method === 'command' ? 'var(--accent)' : 'transparent',
                   color: method === 'command' ? 'var(--bg)' : 'var(--fg-2)',
                 }}>
-                📋 Команда
+                📋 {t('methodCommand')}
               </button>
               <button type="button" onClick={() => setMethod('ssh')}
                 className="flex-1 py-2 text-[12.5px] font-medium"
@@ -238,24 +240,23 @@ export default function DeviceAddModal({ onClose }: Props) {
                   color: method === 'ssh' ? 'var(--bg)' : 'var(--fg-2)',
                   borderLeft: '1px solid var(--border)',
                 }}>
-                🔐 SSH
+                🔐 {t('methodSsh')}
               </button>
             </div>
 
             {method === 'command' && (
               <p className="text-[11.5px] mt-2" style={{ color: 'var(--muted)' }}>
-                После создания покажу команду + QR. Скопируй и вставь в терминал устройства.
+                {t('commandHint')}
               </p>
             )}
             {method === 'ssh' && (
               <div className="mt-3 flex flex-col gap-2">
                 <p className="text-[11.5px]" style={{ color: 'var(--muted)' }}>
-                  Pocket-claude сам зайдёт по SSH и поставит агент. Пароль/ключ живёт
-                  только в памяти, в БД не пишется.
+                  {t('sshHint')}
                 </p>
                 <div className="flex gap-2">
                   <input value={sshHost} onChange={(e) => setSshHost(e.target.value)}
-                    placeholder="192.168.1.5 или my.server"
+                    placeholder={t('sshHostPlaceholder')}
                     className="flex-1 px-3 py-2 rounded-lg text-sm bg-transparent outline-none"
                     style={{ border: '1px solid var(--border)', color: 'var(--fg)' }} />
                   <input value={sshPort} onChange={(e) => setSshPort(e.target.value)}
@@ -274,14 +275,14 @@ export default function DeviceAddModal({ onClose }: Props) {
                     style={{
                       background: sshAuthType === 'password' ? 'var(--surface-2)' : 'transparent',
                       fontWeight: sshAuthType === 'password' ? 600 : 400,
-                    }}>Пароль</button>
+                    }}>{t('authPassword')}</button>
                   <button type="button" onClick={() => setSshAuthType('key')}
                     className="flex-1 py-1.5 text-[12px]"
                     style={{
                       background: sshAuthType === 'key' ? 'var(--surface-2)' : 'transparent',
                       fontWeight: sshAuthType === 'key' ? 600 : 400,
                       borderLeft: '1px solid var(--border)',
-                    }}>Ключ</button>
+                    }}>{t('authKey')}</button>
                 </div>
 
                 {sshAuthType === 'password' ? (
@@ -297,7 +298,7 @@ export default function DeviceAddModal({ onClose }: Props) {
                       className="w-full px-3 py-2 rounded-lg text-[10.5px] bg-transparent outline-none font-mono"
                       style={{ border: '1px solid var(--border)', color: 'var(--fg)' }} />
                     <input value={sshPassphrase} onChange={(e) => setSshPassphrase(e.target.value)}
-                      type="password" placeholder="passphrase (если ключ зашифрован)"
+                      type="password" placeholder={t('passphrasePlaceholder')}
                       className="w-full px-3 py-2 rounded-lg text-sm bg-transparent outline-none"
                       style={{ border: '1px solid var(--border)', color: 'var(--fg)' }} />
                   </>
@@ -306,10 +307,10 @@ export default function DeviceAddModal({ onClose }: Props) {
             )}
 
             <div className="flex justify-end gap-2 mt-4 shrink-0">
-              <button onClick={onClose} className="btn-secondary">Отмена</button>
+              <button onClick={onClose} className="btn-secondary">{t('cancel')}</button>
               <button onClick={method === 'ssh' ? handleSshFlow : handleCommandFlow}
                 className="btn-primary">
-                {method === 'ssh' ? 'Подключить' : 'Создать'}
+                {method === 'ssh' ? t('connect') : t('create')}
               </button>
             </div>
           </>
@@ -318,21 +319,21 @@ export default function DeviceAddModal({ onClose }: Props) {
         {/* ───── STEP: WAITING (command flow) ───── */}
         {step === 'waiting' && cmd && (
           <>
-            <div className="text-xs mb-2" style={{ color: 'var(--muted)' }}>Запусти на устройстве:</div>
+            <div className="text-xs mb-2" style={{ color: 'var(--muted)' }}>{t('runOnDevice')}</div>
             <div className="relative">
               <pre className="text-[11px] font-mono p-3 rounded-lg whitespace-pre-wrap break-all max-h-[140px] overflow-auto"
                 style={{ background: '#1a1a1a', color: '#e5e7eb' }}>{cmd.connect_cmd}</pre>
               <button onClick={() => { navigator.clipboard.writeText(cmd.connect_cmd); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
                 className="absolute top-2 right-2 text-[10px] px-2 py-1 rounded"
                 style={{ background: 'rgba(255,255,255,.15)', color: '#fff' }}>
-                {copied ? '✓ скопировано' : '📋 copy'}
+                {copied ? t('copied') : t('copy')}
               </button>
             </div>
 
             {qrSvg && (
               <div className="mt-3">
                 <div className="text-[11.5px] mb-1.5" style={{ color: 'var(--muted)' }}>
-                  Или сосканируй QR на втором устройстве (в нём вся команда):
+                  {t('qrHint')}
                 </div>
                 <div className="flex justify-center p-2 rounded-lg"
                   style={{ background: '#fff', border: '1px solid var(--border)' }}
@@ -347,12 +348,12 @@ export default function DeviceAddModal({ onClose }: Props) {
                 animation: online ? 'none' : 'pulse 1.4s infinite',
               }} />
               <div className="text-xs">
-                {online ? <strong>Подключено ✓</strong> : 'Жду подключения…'}
+                {online ? <strong>{t('connectedOk')}</strong> : t('waiting')}
               </div>
             </div>
 
             <div className="flex justify-end gap-2 mt-4 shrink-0">
-              <button onClick={onClose} className="btn-primary">{online ? 'Готово' : 'Закрыть'}</button>
+              <button onClick={onClose} className="btn-primary">{online ? t('done') : t('close')}</button>
             </div>
           </>
         )}
@@ -369,11 +370,11 @@ export default function DeviceAddModal({ onClose }: Props) {
                 animation: (sshStatus === 'connecting' || sshStatus === 'running') ? 'pulse 1.4s infinite' : 'none',
               }} />
               <div className="text-xs">
-                {sshStatus === 'connecting' && 'Коннекчусь по SSH…'}
-                {sshStatus === 'running' && 'Ставлю агент…'}
-                {sshStatus === 'done' && !online && 'Установка OK, жду коннект агента…'}
-                {sshStatus === 'done' && online && <strong>Подключено ✓</strong>}
-                {sshStatus === 'error' && <span style={{ color: 'var(--danger)' }}>Ошибка — см. лог</span>}
+                {sshStatus === 'connecting' && t('sshConnecting')}
+                {sshStatus === 'running' && t('sshInstalling')}
+                {sshStatus === 'done' && !online && t('sshDoneWaiting')}
+                {sshStatus === 'done' && online && <strong>{t('connectedOk')}</strong>}
+                {sshStatus === 'error' && <span style={{ color: 'var(--danger)' }}>{t('sshError')}</span>}
               </div>
             </div>
 
@@ -384,7 +385,7 @@ export default function DeviceAddModal({ onClose }: Props) {
 
             <div className="flex justify-end gap-2 mt-4 shrink-0">
               <button onClick={onClose} className="btn-primary">
-                {online ? 'Готово' : 'Закрыть'}
+                {online ? t('done') : t('close')}
               </button>
             </div>
           </>

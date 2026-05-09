@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { ArrowLeft, X, FolderOpen, FolderPlus, Loader2, ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import DeviceBrowser from './DeviceBrowser';
 import { effectiveIntent, type DeviceIntent } from '@/lib/device-intent';
 import { MODELS, DEFAULT_MODEL, normalizeProvider, type Provider } from '@/lib/models';
@@ -34,6 +35,7 @@ interface Props {
 type Step = 'device' | 'action' | 'pick-existing' | 'pick-parent' | 'name-new';
 
 export default function ProjectCreateModal({ devices, onClose, onCreated }: Props) {
+  const t = useTranslations('project');
   const [step, setStep] = useState<Step>('device');
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [claudeDeviceId, setClaudeDeviceId] = useState<string | null>(null);
@@ -81,7 +83,7 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
   }
 
   async function createFromExisting(path: string) {
-    if (needsClaudeDevice && !claudeDeviceId) { setErr('Выбери устройство с Claude'); return; }
+    if (needsClaudeDevice && !claudeDeviceId) { setErr(t('errPickClaude')); return; }
     setErr(''); setBusy(true);
     const r = await fetch('/api/projects', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -92,23 +94,23 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
       }),
     });
     setBusy(false);
-    if (!r.ok) { const j = await r.json().catch(() => ({})); setErr(j.error || 'ошибка'); return; }
+    if (!r.ok) { const j = await r.json().catch(() => ({})); setErr(j.error || t('errGeneric')); return; }
     const j = await r.json();
     onCreated(j.id);
   }
 
   async function createNew() {
     setErr('');
-    if (!parentPath || !newName.trim()) { setErr('Нужно имя папки'); return; }
-    if (!/^[\w.\- ]+$/.test(newName.trim())) { setErr('Недопустимые символы в имени'); return; }
-    if (needsClaudeDevice && !claudeDeviceId) { setErr('Выбери устройство с Claude'); return; }
+    if (!parentPath || !newName.trim()) { setErr(t('errNeedName')); return; }
+    if (!/^[\w.\- ]+$/.test(newName.trim())) { setErr(t('errBadChars')); return; }
+    if (needsClaudeDevice && !claudeDeviceId) { setErr(t('errPickClaude')); return; }
     setBusy(true);
     const m = await fetch(`/api/devices/${deviceId}/mkdir`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ path: parentPath, name: newName.trim() }),
     });
     if (!m.ok) {
-      const j = await m.json().catch(() => ({})); setBusy(false); setErr(j.error || 'Не удалось создать папку'); return;
+      const j = await m.json().catch(() => ({})); setBusy(false); setErr(j.error || t('errCreateFolder')); return;
     }
     const md = await m.json();
     const r = await fetch('/api/projects', {
@@ -120,7 +122,7 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
       }),
     });
     setBusy(false);
-    if (!r.ok) { const j = await r.json().catch(() => ({})); setErr(j.error || 'ошибка'); return; }
+    if (!r.ok) { const j = await r.json().catch(() => ({})); setErr(j.error || t('errGeneric')); return; }
     const j = await r.json();
     onCreated(j.id);
   }
@@ -128,17 +130,17 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
   /* ============ BODY по шагам ============ */
 
   const stepTitle =
-    step === 'device' ? 'Выбери устройство' :
-    step === 'action' ? 'Что будем делать?' :
-    step === 'pick-existing' ? 'Выбери папку' :
-    step === 'pick-parent' ? 'Где создать новую папку?' :
-    'Имя новой папки';
+    step === 'device' ? t('stepDevice') :
+    step === 'action' ? t('stepAction') :
+    step === 'pick-existing' ? t('stepPickExisting') :
+    step === 'pick-parent' ? t('stepPickParent') :
+    t('stepName');
 
   const breadcrumb = [
-    'Новый проект',
+    t('breadcrumbRoot'),
     selectedDevice?.name,
-    step === 'pick-existing' ? 'Открыть существующую' :
-    step === 'pick-parent' || step === 'name-new' ? 'Создать новую' :
+    step === 'pick-existing' ? t('breadcrumbOpenExisting') :
+    step === 'pick-parent' || step === 'name-new' ? t('breadcrumbCreateNew') :
     null,
   ].filter(Boolean).join(' · ');
 
@@ -155,7 +157,7 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
         <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
           {step !== 'device' ? (
             <button onClick={goBack} className="w-8 h-8 rounded-md flex items-center justify-center hover:bg-[var(--surface-2)]"
-              style={{ color: 'var(--fg-2)' }} aria-label="Назад">
+              style={{ color: 'var(--fg-2)' }} aria-label={t('back')}>
               <ArrowLeft size={18} />
             </button>
           ) : (
@@ -168,7 +170,7 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
             </div>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-md flex items-center justify-center hover:bg-[var(--surface-2)]"
-            style={{ color: 'var(--muted)' }} aria-label="Закрыть">
+            style={{ color: 'var(--muted)' }} aria-label={t('close')}>
             <X size={18} />
           </button>
         </div>
@@ -183,8 +185,8 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
                 <div className="text-sm px-4 py-8 text-center rounded-xl"
                   style={{ background: 'var(--accent-light)', color: 'var(--muted)' }}>
                   <div className="text-2xl mb-2">📱</div>
-                  <div className="font-medium mb-1">Нет устройств</div>
-                  <div className="text-xs">Подключи первое — вкладка «Устройства» внизу</div>
+                  <div className="font-medium mb-1">{t('noDevices')}</div>
+                  <div className="text-xs">{t('noDevicesHint')}</div>
                 </div>
               ) : (
                 <>
@@ -212,11 +214,11 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
                           <div className="text-[14px] font-medium truncate">{d.name}</div>
                           <div className="text-[11px] font-mono" style={{ color: 'var(--muted)' }}>
                             <span style={{ color: d.online ? 'var(--ok)' : 'var(--danger)' }}>
-                              {d.online ? 'онлайн' : 'оффлайн'}
+                              {d.online ? t('deviceOnline') : t('deviceOffline')}
                             </span>
                             {' · '}
                             <span style={{ color: role === 'claude' ? 'var(--ok)' : 'var(--fg-2)' }}>
-                              {role === 'claude' ? 'claude' : 'только файлы'}
+                              {role === 'claude' ? t('roleClaude') : t('roleFiles')}
                             </span>
                           </div>
                         </div>
@@ -235,13 +237,13 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
               {/* Для fs-only устройств — селектор «где запускать Claude» */}
               {needsClaudeDevice && (
                 <div className="p-3 rounded-xl flex flex-col gap-2" style={{ background: 'var(--accent-tint)', border: '1px solid var(--border)' }}>
-                  <div className="text-[12.5px] font-medium">Это устройство только для файлов</div>
+                  <div className="text-[12.5px] font-medium">{t('fsOnlyTitle')}</div>
                   <div className="text-[11.5px]" style={{ color: 'var(--muted)' }}>
-                    Выбери где запускать Claude:
+                    {t('fsOnlyHint')}
                   </div>
                   {claudeCandidates.length === 0 ? (
                     <div className="text-xs px-2 py-2 rounded" style={{ background: 'var(--danger-bg)', color: 'var(--danger)' }}>
-                      Нет онлайн-устройств с Claude. Подключи хотя бы одно.
+                      {t('fsOnlyNoCandidates')}
                     </div>
                   ) : (
                     <div className="flex flex-col gap-1">
@@ -275,9 +277,9 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
                 }}>
                 <FolderOpen size={22} style={{ color: 'var(--accent)' }} />
                 <div className="flex-1">
-                  <div className="text-[14px] font-medium">Открыть существующую папку</div>
+                  <div className="text-[14px] font-medium">{t('openExistingTitle')}</div>
                   <div className="text-[11.5px] mt-0.5" style={{ color: 'var(--muted)' }}>
-                    Например, уже клонированный репозиторий
+                    {t('openExistingBody')}
                   </div>
                 </div>
                 <ChevronRight size={16} style={{ color: 'var(--muted)' }} />
@@ -292,9 +294,9 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
                 }}>
                 <FolderPlus size={22} style={{ color: 'var(--vibrant)' }} />
                 <div className="flex-1">
-                  <div className="text-[14px] font-medium">Создать новую папку</div>
+                  <div className="text-[14px] font-medium">{t('createNewTitle')}</div>
                   <div className="text-[11.5px] mt-0.5" style={{ color: 'var(--muted)' }}>
-                    Выберешь где, впишешь имя
+                    {t('createNewBody')}
                   </div>
                 </div>
                 <ChevronRight size={16} style={{ color: 'var(--muted)' }} />
@@ -304,7 +306,7 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
               {proxyOk && (
                 <div className="mt-2 flex flex-col gap-1.5">
                   <div className="text-[11px] uppercase tracking-wider" style={{ color: 'var(--muted)' }}>
-                    Модель по умолчанию ({provider === 'gemini-cli' ? 'Gemini' : provider === 'codex-cli' ? 'Codex' : 'Claude'})
+                    {t('defaultModelLabel', { provider: provider === 'gemini-cli' ? 'Gemini' : provider === 'codex-cli' ? 'Codex' : 'Claude' })}
                   </div>
                   <div className="grid grid-cols-3 gap-1.5">
                     {availableModels.map(m => {
@@ -344,9 +346,8 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
             <>
               {step === 'pick-parent' && (
                 <div className="text-[12px] px-3 py-2 rounded-lg"
-                  style={{ background: 'var(--accent-light)', color: 'var(--muted)' }}>
-                  Выбери <b>родительскую</b> папку. Имя новой введёшь на следующем шаге.
-                </div>
+                  style={{ background: 'var(--accent-light)', color: 'var(--muted)' }}
+                  dangerouslySetInnerHTML={{ __html: t('pickParentHint') }} />
               )}
               <DeviceBrowser
                 deviceId={deviceId}
@@ -357,7 +358,7 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
                   if (step === 'pick-existing') createFromExisting(path);
                   else { setParentPath(path); setStep('name-new'); }
                 }}
-                pickLabel={step === 'pick-parent' ? 'Создать здесь →' : 'Выбрать эту папку'}
+                pickLabel={step === 'pick-parent' ? t('createHere') : t('pickFolder')}
                 embedded
               />
             </>
@@ -366,9 +367,9 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
           {/* === ШАГ 3b: ввод имени новой папки === */}
           {step === 'name-new' && parentPath && (
             <div className="p-3 rounded-xl flex flex-col gap-2" style={{ background: 'var(--accent-light)', border: '1px solid var(--border)' }}>
-              <div className="text-[11.5px]" style={{ color: 'var(--muted)' }}>Создаю в папке:</div>
+              <div className="text-[11.5px]" style={{ color: 'var(--muted)' }}>{t('creatingIn')}</div>
               <div className="text-[12px] font-mono truncate" style={{ color: 'var(--fg)' }}>{parentPath}</div>
-              <label className="text-[11.5px] mt-2" style={{ color: 'var(--muted)' }}>Имя папки</label>
+              <label className="text-[11.5px] mt-2" style={{ color: 'var(--muted)' }}>{t('folderNameLabel')}</label>
               <input value={newName} autoFocus
                 onChange={(e) => setNewName(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') createNew(); }}
@@ -377,12 +378,12 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
                 style={{ border: '1px solid var(--border)', color: 'var(--fg)', minHeight: 44 }}
               />
               <div className="text-[11px] font-mono truncate" style={{ color: 'var(--muted)' }}>
-                → {parentPath}/<b>{newName || 'имя'}</b>
+                → {parentPath}/<b>{newName || t('namePlaceholder')}</b>
               </div>
               <button onClick={createNew} disabled={busy || !newName.trim()}
                 className="btn btn-primary mt-2 flex items-center justify-center gap-2">
                 {busy && <Loader2 size={14} className="animate-spin" />}
-                Создать проект
+                {t('createProject')}
               </button>
             </div>
           )}

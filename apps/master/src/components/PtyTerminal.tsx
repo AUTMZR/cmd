@@ -11,6 +11,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Terminal as XTerm } from '@xterm/xterm';
 import type { FitAddon as FitAddonT } from '@xterm/addon-fit';
+import { useTranslations } from 'next-intl';
 import '@xterm/xterm/css/xterm.css';
 
 interface Props {
@@ -30,6 +31,7 @@ interface Props {
 type Status = 'connecting' | 'ready' | 'error' | 'closed';
 
 export default function PtyTerminal({ deviceId, deviceName, cwd, mobileBar, onExit, initialCommand }: Props) {
+  const t = useTranslations('pty');
   const hostRef = useRef<HTMLDivElement | null>(null);
   const termRef = useRef<XTerm | null>(null);
   const fitRef = useRef<FitAddonT | null>(null);
@@ -267,16 +269,16 @@ export default function PtyTerminal({ deviceId, deviceName, cwd, mobileBar, onEx
             scheduleUrlScan();
           } else if (m.type === 'pty.exit') {
             setStatus('closed');
-            term!.write(`\r\n\x1b[90m[процесс завершён, код=${m.code}]\x1b[0m\r\n`);
+            term!.write(`\r\n\x1b[90m${t('exitedCode', { code: m.code })}\x1b[0m\r\n`);
           } else if (m.type === 'pty.error') {
             setStatus('error');
-            setErrorMsg(m.message || 'ошибка');
+            setErrorMsg(m.message || t('errorGeneric'));
             if (m.code === 'missing_node_pty') {
               term!.write(
-                '\r\n\x1b[31m✗ node-pty не установлен на устройстве\x1b[0m\r\n' +
-                '\x1b[90mНа сервере выполни:\x1b[0m\r\n' +
+                `\r\n\x1b[31m${t('nodePtyMissing')}\x1b[0m\r\n` +
+                `\x1b[90m${t('runOnServer')}\x1b[0m\r\n` +
                 '  \x1b[33msudo npm install -g node-pty\x1b[0m\r\n' +
-                '\x1b[90mпотом перезапусти агент: systemctl restart autmzr-command-agent\x1b[0m\r\n',
+                `\x1b[90m${t('restartAgent')}\x1b[0m\r\n`,
               );
             } else {
               term!.write(`\r\n\x1b[31m✗ ${m.message}\x1b[0m\r\n`);
@@ -293,7 +295,7 @@ export default function PtyTerminal({ deviceId, deviceName, cwd, mobileBar, onEx
       ws.onerror = () => {
         if (destroyed) return;
         setStatus('error');
-        setErrorMsg('не удалось подключиться');
+        setErrorMsg(t('connectFailed'));
       };
 
       // Ввод пользователя → base64 → в WS
@@ -426,12 +428,12 @@ export default function PtyTerminal({ deviceId, deviceName, cwd, mobileBar, onEx
     if (!pasteText) { setPasteModalOpen(false); return; }
     const ws = wsRef.current;
     if (!ws || ws.readyState !== WebSocket.OPEN) {
-      alert(`❌ Не отправилось: WebSocket ${ws ? `state=${ws.readyState}` : 'null'}\n\nТекст остался в буфере модалки. Закрой модалку и открой PTY заново (сессия могла отвалиться).`);
+      alert(t('alertNotSentWs', { state: ws ? `state=${ws.readyState}` : 'null' }));
       return;
     }
     const ok = sendKey(pasteText);
     if (!ok) {
-      alert('❌ sendKey вернул false — не отправилось');
+      alert(t('alertSendKeyFalse'));
       return;
     }
     // Успех — закрываем модалку
@@ -457,20 +459,20 @@ export default function PtyTerminal({ deviceId, deviceName, cwd, mobileBar, onEx
         <div className="flex-1" />
         {/* Всегда доступные: скролл истории (не требует открытой PTY) */}
         <button type="button" onClick={() => scrollBy(-5)}
-          title="Вверх по истории"
+          title={t('scrollUp')}
           className="font-mono text-[14px] w-7 h-7 rounded hover:bg-[#1a1a1a]"
           style={{ color: '#d4d4aa', border: '1px solid #262626', lineHeight: '1' }}>
           ↑
         </button>
         <button type="button" onClick={() => scrollBy(5)}
-          title="Вниз по истории"
+          title={t('scrollDown')}
           className="font-mono text-[14px] w-7 h-7 rounded hover:bg-[#1a1a1a]"
           style={{ color: '#d4d4aa', border: '1px solid #262626', lineHeight: '1' }}>
           ↓
         </button>
         {/* Paste — полезна как только WS открыт */}
         <button type="button" onClick={pasteFromClipboard}
-          title="Вставить из буфера обмена"
+          title={t('pasteFromClipboard')}
           className="font-mono text-[11px] px-2 py-1 rounded hover:bg-[#1a1a1a]"
           style={{ color: '#d4d4aa', border: '1px solid #262626' }}>
           📋 Paste
@@ -482,7 +484,7 @@ export default function PtyTerminal({ deviceId, deviceName, cwd, mobileBar, onEx
           ↵
         </button>
         <button type="button" onClick={() => sendKey('\x03')}
-          title="Прервать выполняющуюся команду (Ctrl+C)"
+          title={t('interruptCmd')}
           className="font-mono text-[11px] px-2 py-1 rounded hover:bg-[#1a1a1a]"
           style={{ color: '#fca5a5', border: '1px solid #262626' }}>
           Ctrl+C
@@ -494,10 +496,10 @@ export default function PtyTerminal({ deviceId, deviceName, cwd, mobileBar, onEx
               .replace(/\u001b\[[0-9;?]*[a-zA-Z]/g, '')
               .replace(/\r\n?/g, '\n');
             const last = raw.slice(-2000);
-            try { await navigator.clipboard.writeText(last); alert(`Скопирован raw-буфер (${last.length} символов) в clipboard. Вставь в чат если URL не парсится.`); }
+            try { await navigator.clipboard.writeText(last); alert(t('debugCopied', { count: last.length })); }
             catch { alert(last); }
           }}
-          title="Скопировать сырой вывод PTY (debug URL parser)"
+          title={t('debugTitle')}
           className="font-mono text-[11px] px-1.5 py-1 rounded hover:bg-[#1a1a1a]"
           style={{ color: '#9ca3af', border: '1px solid #262626' }}>
           🐞
@@ -522,7 +524,7 @@ export default function PtyTerminal({ deviceId, deviceName, cwd, mobileBar, onEx
                 onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
                 className="shrink-0 font-mono text-[10.5px] px-1.5 py-0.5 rounded"
                 style={{ background: '#d4d4aa', color: '#0a0a0a' }}>
-                Открыть
+                {t('openUrl')}
               </button>
               <button type="button"
                 onClick={async () => {
@@ -530,7 +532,7 @@ export default function PtyTerminal({ deviceId, deviceName, cwd, mobileBar, onEx
                 }}
                 className="shrink-0 font-mono text-[10.5px] px-1.5 py-0.5 rounded"
                 style={{ background: '#262626', color: '#d4d4aa', border: '1px solid #404040' }}>
-                {urlCopied === url ? '✓' : 'Копировать'}
+                {urlCopied === url ? '✓' : t('copy')}
               </button>
             </div>
           ))}
@@ -548,7 +550,7 @@ export default function PtyTerminal({ deviceId, deviceName, cwd, mobileBar, onEx
           <KeyBtn label="Esc" onClick={() => sendKey('\x1b')} />
           <KeyBtn label="Tab" onClick={() => sendKey('\t')} />
           <KeyBtn label="Ctrl" active={ctrlArmed} onClick={() => setCtrlArmed(v => !v)}
-            title="Следующая клавиша будет с Ctrl" />
+            title={t('ctrlTitle')} />
           {ctrlArmed ? (
             <>
               <KeyBtn label="C" onClick={() => sendCtrl('C')} />
@@ -564,11 +566,11 @@ export default function PtyTerminal({ deviceId, deviceName, cwd, mobileBar, onEx
           ) : (
             <>
               <KeyBtn label="🔤" onClick={() => { setPasteText(''); setPasteModalOpen(true); }}
-                title="Открыть клавиатуру для ввода текста" />
+                title={t('openKeyboard')} />
               <KeyBtn label="↵ Enter" onClick={() => sendKey('\r')}
-                title="Enter (выбрать / подтвердить)" />
+                title={t('enterTitle')} />
               <KeyBtn label="📋" onClick={pasteFromClipboard}
-                title="Вставить из буфера обмена" />
+                title={t('pasteFromClipboard')} />
               <KeyBtn label="↑" onClick={() => sendKey('\x1b[A')} />
               <KeyBtn label="↓" onClick={() => sendKey('\x1b[B')} />
               <KeyBtn label="←" onClick={() => sendKey('\x1b[D')} />
@@ -579,9 +581,9 @@ export default function PtyTerminal({ deviceId, deviceName, cwd, mobileBar, onEx
                 <KeyBtn key={n} label={n} onClick={() => sendKey(n)} />
               ))}
               <KeyBtn label="exit(q)" onClick={() => sendKey('q')}
-                title="Выйти из htop/less/man/top/tig/psql" />
+                title={t('exitQ')} />
               <KeyBtn label=":q" onClick={() => sendKey('\x1b:q\r')}
-                title="Выйти из vim (Esc :q ⏎)" />
+                title={t('exitVim')} />
               <KeyBtn label="|" onClick={() => sendKey('|')} />
               <KeyBtn label="/" onClick={() => sendKey('/')} />
               <KeyBtn label="~" onClick={() => sendKey('~')} />
@@ -613,10 +615,9 @@ export default function PtyTerminal({ deviceId, deviceName, cwd, mobileBar, onEx
             onClick={(e) => e.stopPropagation()}>
             <div className="w-11 h-1 rounded-full mx-auto -mt-1" style={{ background: 'var(--border-strong)' }} />
             <div>
-              <div className="text-[15px] font-semibold">Вставить в терминал</div>
+              <div className="text-[15px] font-semibold">{t('pasteModalTitle')}</div>
               <div className="text-[11.5px] mt-0.5" style={{ color: 'var(--muted)' }}>
-                {pasteText ? '✓ взяли из буфера — проверь и нажми «Вставить»'
-                           : 'Long-press в поле ниже → «Paste» в iOS-меню'}
+                {pasteText ? t('pasteModalGotFromBuffer') : t('pasteModalLongPress')}
               </div>
             </div>
             <textarea value={pasteText}
@@ -624,27 +625,26 @@ export default function PtyTerminal({ deviceId, deviceName, cwd, mobileBar, onEx
               onInput={(e) => setPasteText((e.target as HTMLTextAreaElement).value)}
               onPaste={(e) => {
                 // Ручной хэндлер: react onChange иногда не ловит paste на iOS
-                const t = e.clipboardData?.getData('text');
-                if (t) {
+                const txt = e.clipboardData?.getData('text');
+                if (txt) {
                   e.preventDefault();
-                  setPasteText(t);
+                  setPasteText(txt);
                 }
               }}
               autoFocus rows={4}
-              placeholder="long-press здесь → Paste"
+              placeholder={t('pasteModalPlaceholder')}
               spellCheck={false} autoCapitalize="off" autoCorrect="off"
               className="w-full px-3 py-2 rounded-lg text-[15px] bg-transparent outline-none font-mono"
               style={{ border: '1px solid var(--border)', color: 'var(--fg)' }} />
             {pasteText && (
-              <div className="text-[11px]" style={{ color: 'var(--muted)' }}>
-                будет отправлено: <b>{pasteText.length}</b> символов
-              </div>
+              <div className="text-[11px]" style={{ color: 'var(--muted)' }}
+                dangerouslySetInnerHTML={{ __html: t('willSend', { count: pasteText.length }) }} />
             )}
             <div className="flex gap-2">
               <button onClick={() => setPasteModalOpen(false)}
                 className="flex-1 px-4 py-2.5 rounded-xl text-[14px]"
                 style={{ background: 'var(--surface-2)', color: 'var(--fg-2)' }}>
-                Отмена
+                {t('cancel')}
               </button>
               <button onClick={submitPasteModal}
                 className="flex-1 px-4 py-2.5 rounded-xl text-[14px] font-semibold"
@@ -652,7 +652,7 @@ export default function PtyTerminal({ deviceId, deviceName, cwd, mobileBar, onEx
                   background: pasteText ? 'var(--accent)' : 'var(--surface-2)',
                   color: pasteText ? 'var(--bg)' : 'var(--muted)',
                 }}>
-                Вставить ↵ {pasteText ? `(${pasteText.length})` : ''}
+                {t('pasteAction')} {pasteText ? `(${pasteText.length})` : ''}
               </button>
             </div>
           </div>

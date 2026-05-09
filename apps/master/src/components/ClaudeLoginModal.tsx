@@ -12,6 +12,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 
 const PtyTerminal = dynamic(() => import('./PtyTerminal'), { ssr: false, loading: () => null });
 
@@ -25,6 +26,7 @@ type Method = 'subscription' | 'api-key' | 'oauth';
 type Status = 'idle' | 'saving' | 'ok' | 'error';
 
 export default function ClaudeLoginModal({ deviceId, deviceName, onClose }: Props) {
+  const t = useTranslations('claudeLogin');
   const [method, setMethod] = useState<Method>('subscription');
   const [apiKey, setApiKey] = useState('');
   const [showKey, setShowKey] = useState(false);
@@ -64,7 +66,7 @@ export default function ClaudeLoginModal({ deviceId, deviceName, onClose }: Prop
             const ev = JSON.parse(ln.slice(5).trim());
             if (ev.type === 'out' || ev.type === 'err') setLog(l => l + ev.text);
             else if (ev.type === 'exit') setLog(l => l + `\n[exit ${ev.code}]\n`);
-            else if (ev.type === 'ok') { setStatus('ok'); setLog(l => l + `\n✓ ${ev.message || 'готово'}\n`); }
+            else if (ev.type === 'ok') { setStatus('ok'); setLog(l => l + `\n✓ ${ev.message || t('done')}\n`); }
             else if (ev.type === 'error') { setStatus('error'); setLog(l => l + `\n✗ ${ev.message}\n`); }
           } catch {}
         }
@@ -77,7 +79,7 @@ export default function ClaudeLoginModal({ deviceId, deviceName, onClose }: Prop
 
   async function saveApiKey() {
     if (!apiKey.trim().startsWith('sk-ant-')) {
-      alert('API-key должен начинаться с sk-ant-…\nСкопируй его со страницы console.anthropic.com/settings/keys');
+      alert(t('alertBadApiKey'));
       return;
     }
     await streamSSE(`/api/devices/${deviceId}/claude-set-api-key`, { apiKey: apiKey.trim() });
@@ -85,9 +87,9 @@ export default function ClaudeLoginModal({ deviceId, deviceName, onClose }: Prop
   }
 
   async function saveCredentials() {
-    if (!credsJson.trim()) { alert('Вставь содержимое файла ~/.claude/.credentials.json'); return; }
+    if (!credsJson.trim()) { alert(t('alertPasteCreds')); return; }
     try { JSON.parse(credsJson.trim()); }
-    catch { alert('Это не похоже на JSON. Скопируй файл целиком.'); return; }
+    catch { alert(t('alertNotJson')); return; }
     await streamSSE(`/api/devices/${deviceId}/claude-set-credentials`, { credentials: credsJson.trim() });
     setCredsJson('');
   }
@@ -104,9 +106,9 @@ export default function ClaudeLoginModal({ deviceId, deviceName, onClose }: Prop
         <div className="flex items-center justify-between px-5 py-4 shrink-0"
           style={{ borderBottom: '1px solid var(--border)' }}>
           <div>
-            <h3 className="text-base font-semibold">Войти в Claude</h3>
+            <h3 className="text-base font-semibold">{t('title')}</h3>
             <div className="text-[11.5px]" style={{ color: 'var(--muted)' }}>
-              на устройстве <b>{deviceName}</b>
+              {t('onDevicePrefix')} <b>{deviceName}</b>
             </div>
           </div>
           <button onClick={onClose} disabled={status === 'saving'}
@@ -118,18 +120,18 @@ export default function ClaudeLoginModal({ deviceId, deviceName, onClose }: Prop
         <div className="grid grid-cols-3 gap-px m-3 mb-2 shrink-0 rounded-lg overflow-hidden"
           style={{ background: 'var(--border)' }}>
           {([
-            { id: 'subscription' as const, label: '🎯 Подписка', hint: 'Pro/Max' },
-            { id: 'api-key'      as const, label: '🔑 API-key', hint: 'pay-per-use' },
-            { id: 'oauth'        as const, label: '🌐 OAuth',  hint: 'local only' },
-          ]).map(t => (
-            <button key={t.id} onClick={() => setMethod(t.id)}
+            { id: 'subscription' as const, label: `🎯 ${t('subscriptionTab')}`, hint: t('subscriptionHint') },
+            { id: 'api-key'      as const, label: `🔑 ${t('apiKeyTab')}`, hint: t('apiKeyHint') },
+            { id: 'oauth'        as const, label: `🌐 ${t('oauthTab')}`,  hint: t('oauthHint') },
+          ]).map(tab => (
+            <button key={tab.id} onClick={() => setMethod(tab.id)}
               className="py-2 px-1 text-[11.5px] font-medium flex flex-col items-center"
               style={{
-                background: method === t.id ? 'var(--accent)' : 'var(--surface)',
-                color: method === t.id ? 'var(--bg)' : 'var(--fg-2)',
+                background: method === tab.id ? 'var(--accent)' : 'var(--surface)',
+                color: method === tab.id ? 'var(--bg)' : 'var(--fg-2)',
               }}>
-              <span>{t.label}</span>
-              <span className="text-[9.5px] opacity-70">{t.hint}</span>
+              <span>{tab.label}</span>
+              <span className="text-[9.5px] opacity-70">{tab.hint}</span>
             </button>
           ))}
         </div>
@@ -142,14 +144,14 @@ export default function ClaudeLoginModal({ deviceId, deviceName, onClose }: Prop
               style={{ background: 'var(--accent-light)', borderBottom: '1px solid var(--border)' }}>
               <summary className="px-4 py-2 text-[12.5px] cursor-pointer flex items-center justify-between"
                 style={{ listStyle: 'none' }}>
-                <span>❓ <b>Как залогиниться через подписку</b> <span style={{ color: 'var(--muted)' }}>— 4 шага</span></span>
+                <span>❓ <b>{t('subInstructionsTitle')}</b> <span style={{ color: 'var(--muted)' }}>{t('subInstructionsSteps')}</span></span>
                 <span className="text-[11px]" style={{ color: 'var(--muted)' }}>▾</span>
               </summary>
               <ol className="list-decimal list-inside space-y-0.5 text-[12px] px-4 pb-3 pt-1 leading-snug">
-                <li>Ниже сам запустится <code className="font-mono text-[11px]">claude /login</code> — появится URL.</li>
-                <li><b>Long-press на URL</b> → «Скопировать ссылку» → тап → Safari откроет claude.ai.</li>
-                <li>Залогинься, claude.ai выдаст <b>код</b>. Скопируй его.</li>
-                <li>Вернись сюда → <b>📋 Paste</b> в верхнем углу терминала → вставь код → «Вставить ↵».</li>
+                <li>{t.rich('subStep1', { code: (c) => <code className="font-mono text-[11px]">{c}</code> })}</li>
+                <li>{t.rich('subStep2', { b: (c) => <b>{c}</b> })}</li>
+                <li>{t.rich('subStep3', { b: (c) => <b>{c}</b> })}</li>
+                <li>{t.rich('subStep4', { b: (c) => <b>{c}</b> })}</li>
               </ol>
             </details>
 
@@ -171,25 +173,25 @@ export default function ClaudeLoginModal({ deviceId, deviceName, onClose }: Prop
               style={{ borderTop: '1px solid var(--border)', background: 'var(--surface-2)' }}>
               <summary className="px-4 py-2 text-[11.5px] cursor-pointer"
                 style={{ color: 'var(--muted)', listStyle: 'none' }}>
-                🔧 Не получается? Есть альтернатива ▾
+                🔧 {t('alternativeTitle')} ▾
               </summary>
               <div className="px-4 py-3 text-[11.5px]" style={{ color: 'var(--fg-2)' }}>
-                <div className="mb-2">Скопировать уже готовый <code className="font-mono">credentials.json</code> с компа:</div>
+                <div className="mb-2">{t.rich('copyCredsHint', { code: (c) => <code className="font-mono">{c}</code> })}</div>
                 <label className="inline-block px-3 py-1.5 rounded-md text-[12px] cursor-pointer mr-2"
                   style={{ background: 'var(--surface)', color: 'var(--fg)', border: '1px solid var(--border)' }}>
-                  📂 Выбрать файл
+                  📂 {t('pickFile')}
                   <input type="file" accept=".json,application/json" hidden
                     onChange={async (e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
                       const text = await file.text();
                       try { JSON.parse(text); }
-                      catch { alert(`Файл "${file.name}" не JSON`); return; }
+                      catch { alert(t('alertFileNotJson', { name: file.name })); return; }
                       await streamSSE(`/api/devices/${deviceId}/claude-set-credentials`, { credentials: text });
                       e.target.value = '';
                     }} />
                 </label>
-                <span className="text-[10.5px]" style={{ color: 'var(--muted)' }}>путь: ~/.claude/.credentials.json</span>
+                <span className="text-[10.5px]" style={{ color: 'var(--muted)' }}>{t('pathHint')}</span>
                 {log && (
                   <div ref={logRef} className="mt-2 rounded p-2 font-mono text-[10.5px] whitespace-pre-wrap max-h-[100px] overflow-y-auto"
                     style={{ background: '#0a0a0a', color: '#e5e7eb' }}>
@@ -208,15 +210,16 @@ export default function ClaudeLoginModal({ deviceId, deviceName, onClose }: Prop
               style={{ background: 'var(--accent-light)', border: '1px solid var(--border)' }}>
               <summary className="px-3 py-2 text-[12.5px] cursor-pointer"
                 style={{ listStyle: 'none' }}>
-                ❓ <b>Как получить API-ключ</b> <span style={{ color: 'var(--muted)' }}>▾</span>
+                ❓ <b>{t('apiKeyHowTo')}</b> <span style={{ color: 'var(--muted)' }}>▾</span>
               </summary>
               <ol className="list-decimal list-inside space-y-0.5 text-[11.5px] px-3 pb-2 pt-1 leading-snug">
-                <li>Открой <a href="https://console.anthropic.com/settings/keys" target="_blank"
-                  className="underline" style={{ color: 'var(--accent)' }}>
-                  console.anthropic.com/settings/keys</a></li>
-                <li>Нажми <b>Create Key</b>, дай имя (типа «autmzr-command»)</li>
-                <li>Скопируй ключ (начинается с <code className="font-mono text-[10.5px]">sk-ant-…</code>)</li>
-                <li>Вставь ниже и жми «Сохранить». Ключ пойдёт в pay-per-use тариф, не подписку.</li>
+                <li>{t.rich('apiKeyStep1', {
+                  link: (c) => <a href="https://console.anthropic.com/settings/keys" target="_blank"
+                    className="underline" style={{ color: 'var(--accent)' }}>{c}</a>,
+                })}</li>
+                <li>{t.rich('apiKeyStep2', { b: (c) => <b>{c}</b> })}</li>
+                <li>{t.rich('apiKeyStep3', { code: (c) => <code className="font-mono text-[10.5px]">{c}</code> })}</li>
+                <li>{t('apiKeyStep4')}</li>
               </ol>
             </details>
 
@@ -246,7 +249,7 @@ export default function ClaudeLoginModal({ deviceId, deviceName, onClose }: Prop
               <button onClick={onClose}
                 className="flex-1 px-4 py-2.5 rounded-xl text-[14px]"
                 style={{ background: 'var(--surface-2)', color: 'var(--fg-2)' }}>
-                Закрыть
+                {t('close')}
               </button>
               <button onClick={saveApiKey} disabled={status === 'saving' || !apiKey.trim()}
                 className="flex-1 px-4 py-2.5 rounded-xl text-[14px] font-semibold disabled:opacity-40"
@@ -254,7 +257,7 @@ export default function ClaudeLoginModal({ deviceId, deviceName, onClose }: Prop
                   background: status === 'ok' ? 'var(--ok)' : 'var(--accent)',
                   color: 'var(--bg)',
                 }}>
-                {status === 'saving' ? 'Сохраняю…' : status === 'ok' ? '✓ Сохранено' : 'Сохранить'}
+                {status === 'saving' ? t('saving') : status === 'ok' ? t('saved') : t('save')}
               </button>
             </div>
           </div>
@@ -265,9 +268,7 @@ export default function ClaudeLoginModal({ deviceId, deviceName, onClose }: Prop
           <>
             <div className="px-4 py-2.5 shrink-0 text-[12px] leading-snug"
               style={{ background: '#fef3c7', borderBottom: '1px solid var(--border)', color: '#854d0e' }}>
-              ⚠ OAuth через <code className="font-mono">claude auth login</code> ждёт callback на
-              <code className="font-mono"> localhost</code> того же устройства — на remote сервере
-              не сработает. Используй «Подписку» (скопировать credentials.json) или «API-ключ».
+              ⚠ {t.rich('oauthWarning', { code: (c) => <code className="font-mono">{c}</code> })}
             </div>
             <div className="flex-1 min-h-0">
               <PtyTerminal

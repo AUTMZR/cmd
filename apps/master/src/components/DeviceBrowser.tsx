@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface Entry { name: string; path: string; type: 'dir' | 'file'; size?: number }
 interface Resp {
@@ -32,7 +33,9 @@ interface Props {
   pickLabel?: string;
 }
 
-export default function DeviceBrowser({ deviceId, deviceName, initialPath, onClose, onPick, embedded = false, pickLabel = 'Выбрать эту папку' }: Props) {
+export default function DeviceBrowser({ deviceId, deviceName, initialPath, onClose, onPick, embedded = false, pickLabel }: Props) {
+  const t = useTranslations('device.browser');
+  const effectivePickLabel = pickLabel ?? t('pickThisFolder');
   const [data, setData] = useState<Resp | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -52,7 +55,7 @@ export default function DeviceBrowser({ deviceId, deviceName, initialPath, onClo
     const r = await fetch(url);
     const j = await r.json();
     setLoading(false);
-    if (!r.ok) { setError(j.error || 'Ошибка'); return; }
+    if (!r.ok) { setError(j.error || t('errorGeneric')); return; }
     setData(j);
   }
 
@@ -111,7 +114,7 @@ export default function DeviceBrowser({ deviceId, deviceName, initialPath, onClo
         <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
           <div>
             <div className="text-sm font-semibold">🖥 {deviceName}</div>
-            <div className="text-[11px]" style={{ color: 'var(--muted)' }}>Файлы устройства</div>
+            <div className="text-[11px]" style={{ color: 'var(--muted)' }}>{t('subtitle')}</div>
           </div>
           <button onClick={onClose} className="text-xl" style={{ color: 'var(--muted)' }}>×</button>
         </div>
@@ -120,7 +123,7 @@ export default function DeviceBrowser({ deviceId, deviceName, initialPath, onClo
       {/* crumbs */}
         <div className="px-5 py-2 flex items-center gap-1 text-xs overflow-x-auto whitespace-nowrap"
           style={{ borderBottom: '1px solid var(--border)', color: 'var(--muted)' }}>
-          <button onClick={() => load(null)} className="hover:underline">корни</button>
+          <button onClick={() => load(null)} className="hover:underline">{t('roots')}</button>
           {breadcrumbs.map((b, i) => (
             <span key={b.path} className="flex items-center gap-1">
               <span>/</span>
@@ -140,17 +143,17 @@ export default function DeviceBrowser({ deviceId, deviceName, initialPath, onClo
                 if (e.key === 'Enter') { e.preventDefault(); deepSearch(); }
                 if (e.key === 'Escape') { setQ(''); setDeepResults(null); }
               }}
-              placeholder={data.path ? 'Найти в папке — ⏎ для поиска глубже' : 'Поиск по всем корням — ⏎'}
+              placeholder={data.path ? t('searchInFolder') : t('searchAllRoots')}
               className="flex-1 bg-transparent outline-none text-sm font-mono placeholder:opacity-50" />
             {q && (
               <button onClick={() => { setQ(''); setDeepResults(null); }}
-                className="text-[11px] font-mono" style={{ color: 'var(--muted)' }}>очистить</button>
+                className="text-[11px] font-mono" style={{ color: 'var(--muted)' }}>{t('clear')}</button>
             )}
             {q && !deepResults && (
               <button onClick={deepSearch} disabled={deepLoading}
                 className="text-[11px] px-2 py-1 rounded-md font-mono"
                 style={{ background: 'var(--accent)', color: 'var(--bg)' }}>
-                {deepLoading ? '…' : 'find ⏎'}
+                {deepLoading ? '…' : t('findAction')}
               </button>
             )}
           </div>
@@ -158,14 +161,14 @@ export default function DeviceBrowser({ deviceId, deviceName, initialPath, onClo
 
         {/* list */}
         <div className="flex-1 overflow-y-auto">
-          {loading && <div className="p-4 text-xs" style={{ color: 'var(--muted)' }}>Загрузка…</div>}
+          {loading && <div className="p-4 text-xs" style={{ color: 'var(--muted)' }}>{t('loading')}</div>}
           {error && <div className="p-4 text-xs" style={{ color: 'var(--danger)' }}>{error}</div>}
 
           {/* roots (path empty) */}
           {data && !data.path && !deepResults && (
             <div className="p-2">
               <div className="px-3 py-1 text-[10px] uppercase tracking-wider" style={{ color: 'var(--muted)' }}>
-                {q ? `Корни (фильтр «${q}»)` : 'Корни'}
+                {q ? t('rootsFilter', { q }) : t('rootsTitle')}
               </div>
               {data.roots.filter(r => !q.trim() || r.toLowerCase().includes(q.trim().toLowerCase())).map(r => (
                 <button key={r} onClick={() => load(r)}
@@ -175,7 +178,7 @@ export default function DeviceBrowser({ deviceId, deviceName, initialPath, onClo
               ))}
               {q && !deepResults && (
                 <div className="px-3 py-2 text-[11px]" style={{ color: 'var(--muted)' }}>
-                  ⏎ — поиск по всем корням
+                  {t('enterToSearchRoots')}
                 </div>
               )}
             </div>
@@ -185,13 +188,13 @@ export default function DeviceBrowser({ deviceId, deviceName, initialPath, onClo
           {data && deepResults && (
             <div className="p-1">
               <div className="px-4 py-2 flex items-center gap-2 text-[11px] font-mono" style={{ color: 'var(--muted)' }}>
-                <span>найдено: {deepResults.results.length}{deepResults.timed_out ? ' (обрезано)' : ''}</span>
+                <span>{t('found', { count: deepResults.results.length })}{deepResults.timed_out ? ` ${t('truncated')}` : ''}</span>
                 <span>·</span>
-                <span>поиск в {data.path || (data.roots || []).join(', ') || 'корнях'}</span>
+                <span>{t('searchIn', { path: data.path || (data.roots || []).join(', ') || t('inRoots') })}</span>
               </div>
               {deepResults.results.length === 0 && (
                 <div className="px-4 py-3 text-xs" style={{ color: 'var(--muted)' }}>
-                  Ничего не найдено. Попробуй другое слово.
+                  {t('noResults')}
                 </div>
               )}
               {deepResults.results.map(p => {
@@ -218,7 +221,7 @@ export default function DeviceBrowser({ deviceId, deviceName, initialPath, onClo
               )}
               {filteredEntries.length === 0 && !showCreate && (
                 <div className="px-4 py-3 text-xs" style={{ color: 'var(--muted)' }}>
-                  {q ? 'ничего в этой папке — нажми ⏎ для поиска глубже' : 'Папка пуста'}
+                  {q ? t('emptyHintWithQuery') : t('folderEmpty')}
                 </div>
               )}
               {filteredEntries.map(e => (
@@ -237,13 +240,13 @@ export default function DeviceBrowser({ deviceId, deviceName, initialPath, onClo
                   <span>📁</span>
                   <input autoFocus value={newName} onChange={e => setNewName(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') createFolder(); if (e.key === 'Escape') setShowCreate(false); }}
-                    placeholder="имя папки…" className="flex-1 bg-transparent outline-none text-sm font-mono border-b"
+                    placeholder={t('folderNamePlaceholder')} className="flex-1 bg-transparent outline-none text-sm font-mono border-b"
                     style={{ borderColor: 'var(--border)' }} />
                   <button onClick={createFolder} className="text-xs px-2 py-1 rounded"
                     style={{ background: 'var(--accent)', color: 'var(--bg)' }}>OK</button>
                 </div>
               )}
-              {data.truncated && <div className="px-4 py-2 text-xs" style={{ color: 'var(--muted)' }}>… много файлов, вывод обрезан</div>}
+              {data.truncated && <div className="px-4 py-2 text-xs" style={{ color: 'var(--muted)' }}>{t('manyFilesTruncated')}</div>}
             </div>
           )}
         </div>
@@ -254,7 +257,7 @@ export default function DeviceBrowser({ deviceId, deviceName, initialPath, onClo
             <>
               {!embedded && (
                 <button onClick={() => setShowCreate(!showCreate)}
-                  className="text-xs px-3 py-1.5 rounded-full" style={{ background: 'var(--accent-light)' }}>+ папка</button>
+                  className="text-xs px-3 py-1.5 rounded-full" style={{ background: 'var(--accent-light)' }}>{t('newFolder')}</button>
               )}
               <div className="flex-1" />
               <div className="text-[11px] truncate font-mono" style={{ color: 'var(--muted)' }}>{data.path}</div>
@@ -262,12 +265,12 @@ export default function DeviceBrowser({ deviceId, deviceName, initialPath, onClo
                 <button onClick={() => onPick(data.path)}
                   className="text-xs px-3 py-1.5 rounded-full"
                   style={{ background: 'var(--accent)', color: 'var(--bg)' }}>
-                  {pickLabel}
+                  {effectivePickLabel}
                 </button>
               )}
             </>
           ) : (
-            <div className="text-[11px]" style={{ color: 'var(--muted)' }}>Выбери корень для навигации</div>
+            <div className="text-[11px]" style={{ color: 'var(--muted)' }}>{t('pickRoot')}</div>
           )}
         </div>
     </>

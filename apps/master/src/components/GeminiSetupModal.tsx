@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { ExternalLink, Key, Loader2, Sparkles, Check, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 /**
  * Модалка настройки Gemini CLI на устройстве.
@@ -23,6 +24,7 @@ export default function GeminiSetupModal({
   alreadyLoggedIn: boolean;
   onClose: () => void;
 }) {
+  const t = useTranslations('geminiSetup');
   const [tab, setTab] = useState<'install' | 'key'>(alreadyInstalled ? 'key' : 'install');
   const [apiKey, setApiKey] = useState('');
   const [busy, setBusy] = useState(false);
@@ -47,8 +49,8 @@ export default function GeminiSetupModal({
         signal: ctrl.signal,
       });
       if (!res.ok || !res.body) {
-        const t = await res.text().catch(() => '');
-        throw new Error(`${res.status} ${t.slice(0, 200)}`);
+        const txt = await res.text().catch(() => '');
+        throw new Error(`${res.status} ${txt.slice(0, 200)}`);
       }
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -67,7 +69,7 @@ export default function GeminiSetupModal({
             const msg = JSON.parse(json) as { type: string; text?: string; message?: string; code?: number; version?: string };
             if (msg.type === 'out' || msg.type === 'err') setOutput((o) => o + (msg.text || ''));
             else if (msg.type === 'installed') {
-              setOutput((o) => o + `\n[✓] Gemini ${msg.version} установлен\n`);
+              setOutput((o) => o + `\n[✓] ${t('installedLog', { version: msg.version || '' })}\n`);
               setDone(true);
             } else if (msg.type === 'ok') {
               setOutput((o) => o + `\n[✓] ${msg.message}\n`);
@@ -92,7 +94,7 @@ export default function GeminiSetupModal({
   }
 
   async function runSetKey() {
-    if (!apiKey.trim()) { setErr('Вставь API-ключ'); return; }
+    if (!apiKey.trim()) { setErr(t('alertNoKey')); return; }
     await streamSse(`/api/devices/${deviceId}/gemini-set-api-key`, { apiKey: apiKey.trim() });
     if (!err) setApiKey('');  // очищаем поле после успеха
   }
@@ -115,9 +117,9 @@ export default function GeminiSetupModal({
               <Sparkles size={18} />
             </div>
             <div>
-              <div className="font-semibold text-[15px]">Настройка Gemini CLI</div>
+              <div className="font-semibold text-[15px]">{t('title')}</div>
               <div className="text-[11.5px] font-mono" style={{ color: 'var(--muted)' }}>
-                на устройстве {deviceName}
+                {t('onDevice', { name: deviceName })}
               </div>
             </div>
           </div>
@@ -126,14 +128,14 @@ export default function GeminiSetupModal({
 
         {/* Tabs */}
         <div className="flex gap-1 p-3" style={{ borderBottom: '1px solid var(--border)' }}>
-          {(['install', 'key'] as const).map((t) => {
-            const active = tab === t;
-            const label = t === 'install' ? '📥 Установить' : '🔑 API-ключ';
-            const badge = t === 'install'
+          {(['install', 'key'] as const).map((id) => {
+            const active = tab === id;
+            const label = id === 'install' ? `📥 ${t('tabInstall')}` : `🔑 ${t('tabKey')}`;
+            const badge = id === 'install'
               ? (alreadyInstalled ? '✓' : '')
               : (alreadyLoggedIn ? '✓' : '');
             return (
-              <button key={t} onClick={() => { setTab(t); setErr(null); setDone(false); setOutput(''); }}
+              <button key={id} onClick={() => { setTab(id); setErr(null); setDone(false); setOutput(''); }}
                 className="flex-1 px-3 py-2 rounded-lg text-[13px] font-medium flex items-center justify-center gap-1.5"
                 style={{
                   background: active ? 'var(--accent)' : 'var(--surface-2)',
@@ -150,24 +152,23 @@ export default function GeminiSetupModal({
           {tab === 'install' && (
             <div className="flex flex-col gap-4">
               <p className="text-[13.5px] leading-[1.5]" style={{ color: 'var(--fg-2)' }}>
-                Одной командой поставим <code className="font-mono">@google/gemini-cli</code>
-                {' '}на устройство. Требуется Node.js 20+.
+                {t.rich('installDescription', { code: (c) => <code className="font-mono">{c}</code> })}
               </p>
               {alreadyInstalled && !done && (
                 <div className="text-[12.5px] px-3 py-2 rounded-lg" style={{ background: 'var(--accent-tint)', color: 'var(--fg)' }}>
-                  ℹ️ Gemini уже установлен. Можно обновить или перейти к API-ключу справа.
+                  ℹ️ {t('alreadyInstalled')}
                 </div>
               )}
               <button onClick={runInstall} disabled={busy}
                 className="btn btn-primary flex items-center justify-center gap-2">
                 {busy ? <Loader2 size={14} className="animate-spin" /> : '▶'}
-                {alreadyInstalled ? 'Переустановить' : 'Установить Gemini CLI'}
+                {alreadyInstalled ? t('reinstall') : t('install')}
               </button>
               {done && !err && (
                 <div className="text-[12.5px] px-3 py-2 rounded-lg flex items-start gap-2"
                   style={{ background: 'var(--vibrant-tint)', color: 'var(--vibrant)' }}>
                   <Check size={14} className="mt-0.5 shrink-0" />
-                  <span>Установлено. Теперь добавь API-ключ справа.</span>
+                  <span>{t('installedHint')}</span>
                 </div>
               )}
             </div>
@@ -176,34 +177,34 @@ export default function GeminiSetupModal({
           {tab === 'key' && (
             <div className="flex flex-col gap-4">
               <p className="text-[13.5px] leading-[1.5]" style={{ color: 'var(--fg-2)' }}>
-                Получи API-ключ на{' '}
+                {t('keyDescriptionPrefix')}{' '}
                 <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer"
                   className="inline-flex items-center gap-0.5 underline underline-offset-2"
                   style={{ color: 'var(--vibrant)' }}>
                   aistudio.google.com/apikey
                   <ExternalLink size={11} />
                 </a>
-                . Free-tier: 1500 запросов в день, без карты.
+                {t('keyDescriptionSuffix')}
               </p>
               <div>
-                <label className="field-label flex items-center gap-1.5"><Key size={11} />API-ключ Gemini</label>
+                <label className="field-label flex items-center gap-1.5"><Key size={11} />{t('keyLabel')}</label>
                 <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)}
                   className="field font-mono text-[13px]"
                   placeholder="AIzaSy..." autoComplete="off" />
                 <p className="text-[10.5px] mt-1.5" style={{ color: 'var(--muted)' }}>
-                  Ключ пишется в systemd-override + ~/.bashrc на устройстве. В нашей БД НЕ сохраняется.
+                  {t('keyHint')}
                 </p>
               </div>
               <button onClick={runSetKey} disabled={busy || !apiKey.trim()}
                 className="btn btn-primary flex items-center justify-center gap-2">
                 {busy ? <Loader2 size={14} className="animate-spin" /> : <Key size={14} />}
-                Сохранить ключ
+                {t('saveKey')}
               </button>
               {done && !err && (
                 <div className="text-[12.5px] px-3 py-2 rounded-lg flex items-start gap-2"
                   style={{ background: 'var(--vibrant-tint)', color: 'var(--vibrant)' }}>
                   <Check size={14} className="mt-0.5 shrink-0" />
-                  <span>Готово — Gemini настроен. Теперь можно писать в чат, выбрав «Gemini» в селекторе агента.</span>
+                  <span>{t('keySavedHint')}</span>
                 </div>
               )}
             </div>

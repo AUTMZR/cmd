@@ -6,6 +6,7 @@
  * через SSE-endpoint /api/devices/:id/claude-install.
  */
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface Props {
   deviceId: string;
@@ -17,6 +18,7 @@ interface Props {
 type Status = 'idle' | 'running' | 'installed' | 'failed' | 'timeout';
 
 export default function ClaudeInstallModal({ deviceId, deviceName, onClose, onInstalled }: Props) {
+  const t = useTranslations('claudeInstall');
   const [status, setStatus] = useState<Status>('idle');
   const [version, setVersion] = useState<string>('');
   const [log, setLog] = useState<string>('');
@@ -91,9 +93,9 @@ export default function ClaudeInstallModal({ deviceId, deviceName, onClose, onIn
         <div className="flex items-center justify-between px-5 py-4 shrink-0"
           style={{ borderBottom: '1px solid var(--border)' }}>
           <div>
-            <h3 className="text-base font-semibold">Установка Claude Code</h3>
+            <h3 className="text-base font-semibold">{t('title')}</h3>
             <div className="text-[11.5px] font-mono" style={{ color: 'var(--muted)' }}>
-              на устройстве <b>{deviceName}</b>
+              {t('onDevicePrefix')} <b>{deviceName}</b>
             </div>
           </div>
           <button onClick={onClose} disabled={status === 'running'}
@@ -106,22 +108,22 @@ export default function ClaudeInstallModal({ deviceId, deviceName, onClose, onIn
           {status === 'running' && (
             <div className="flex items-center gap-2 text-[13px]">
               <div className="w-3 h-3 rounded-full animate-pulse" style={{ background: 'var(--warn)' }} />
-              <span>ставлю… (обычно 20-60 сек)</span>
+              <span>{t('installing')}</span>
             </div>
           )}
           {status === 'installed' && (
             <div className="flex items-center gap-2 text-[13px]" style={{ color: 'var(--ok)' }}>
-              <span>✓ Claude Code v{version} установлен</span>
+              <span>✓ {t('installed', { version })}</span>
             </div>
           )}
           {status === 'failed' && (
             <div className="flex items-center gap-2 text-[13px]" style={{ color: 'var(--danger)' }}>
-              <span>✗ не удалось установить</span>
+              <span>✗ {t('failed')}</span>
             </div>
           )}
           {status === 'timeout' && (
             <div className="flex items-center gap-2 text-[13px]" style={{ color: 'var(--warn)' }}>
-              <span>⏱ таймаут — установка идёт дольше 10 минут</span>
+              <span>⏱ {t('timeout')}</span>
             </div>
           )}
         </div>
@@ -136,18 +138,18 @@ export default function ClaudeInstallModal({ deviceId, deviceName, onClose, onIn
         <div className="flex gap-2 px-5 py-3 shrink-0" style={{ borderTop: '1px solid var(--border)' }}>
           {status === 'installed' && (
             <div className="text-[12px] flex-1" style={{ color: 'var(--muted)' }}>
-              Дальше — «Войти в Claude» чтобы CLI смог отвечать.
+              {t('nextStep')}
             </div>
           )}
           {status === 'failed' && (
             <div className="text-[12px] flex-1" style={{ color: 'var(--muted)' }}>
-              Посмотри лог выше — обычно либо нет node/npm, либо нужен sudo.
+              {t('failedHint')}
             </div>
           )}
           <button onClick={onClose} disabled={status === 'running'}
             className="text-[13px] px-4 py-1.5 rounded-full disabled:opacity-30"
             style={{ background: 'var(--accent)', color: 'var(--bg)' }}>
-            {status === 'running' ? '...' : 'Закрыть'}
+            {status === 'running' ? '...' : t('close')}
           </button>
         </div>
       </div>
