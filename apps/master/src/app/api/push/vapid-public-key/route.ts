@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getPublicKey } from '@/lib/push';
 
+// Forces runtime evaluation — без этого Next кэширует пустой ответ при build.
+export const dynamic = 'force-dynamic';
+
 /** Отдаёт VAPID public key для PushManager.subscribe() на клиенте.
  *  Публичная ручка — ключ и так публичный по своей природе. */
 export async function GET() {
