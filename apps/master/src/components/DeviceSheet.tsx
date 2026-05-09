@@ -25,7 +25,13 @@ export interface DeviceSheetDevice {
   codex_installed?: boolean | null;
   codex_version?: string | null;
   codex_logged_in?: boolean | null;
-  preferred_agent?: Provider | null;
+  preferred_agent?: string | null;
+  /** Plugin-providers, репортнутые агентом в hello (id/label/models/status). */
+  plugin_providers?: Array<{
+    id: string; label: string;
+    models: Array<{ id: string; label: string; icon?: string; hint?: string }>;
+    status: { installed: boolean; logged_in: boolean; version?: string; note?: string };
+  }> | null;
   last_online: string | null; root_path: string | null;
   intent?: DeviceIntent | null;
 }
@@ -63,7 +69,7 @@ export default function DeviceSheet({
   const role = effectiveIntent(device);
   const isClaudeRole = role === 'claude';
 
-  async function setPreferredAgent(provider: Provider) {
+  async function setPreferredAgent(provider: Provider | string) {
     await fetch('/api/devices', {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: device.id, preferred_agent: provider }),
@@ -217,8 +223,8 @@ export default function DeviceSheet({
               )}
 
               {/* Default-agent селектор */}
-              {(claudeLoggedIn || geminiLoggedIn || codexLoggedIn) && (
-                <div className="flex items-center gap-2 mt-3 pt-3" style={{ borderTop: '1px dashed var(--border)' }}>
+              {(claudeLoggedIn || geminiLoggedIn || codexLoggedIn || (device.plugin_providers && device.plugin_providers.length > 0)) && (
+                <div className="flex flex-wrap items-center gap-2 mt-3 pt-3" style={{ borderTop: '1px dashed var(--border)' }}>
                   <span className="text-[11.5px]" style={{ color: 'var(--muted)' }}>{t('defaultLabel')}</span>
                   {([
                     { id: 'claude-code', label: '🤖 Claude', ready: claudeLoggedIn },
@@ -228,7 +234,7 @@ export default function DeviceSheet({
                     const active = (device.preferred_agent || 'claude-code') === opt.id;
                     return (
                       <button key={opt.id}
-                        onClick={() => { if (opt.ready) setPreferredAgent(opt.id); }}
+                        onClick={() => { if (opt.ready) setPreferredAgent(opt.id as Provider); }}
                         disabled={!opt.ready}
                         className="text-[11.5px] px-3 py-1 rounded-full disabled:opacity-40"
                         style={{
@@ -237,6 +243,24 @@ export default function DeviceSheet({
                           border: active ? 'none' : '1px solid var(--border)',
                         }}>
                         {opt.label}
+                      </button>
+                    );
+                  })}
+                  {(device.plugin_providers || []).map((pp) => {
+                    const active = device.preferred_agent === pp.id;
+                    const ready = pp.status.installed && pp.status.logged_in;
+                    return (
+                      <button key={pp.id}
+                        onClick={() => { if (ready) setPreferredAgent(pp.id); }}
+                        disabled={!ready}
+                        title={pp.status.note || (ready ? '' : 'plugin not ready')}
+                        className="text-[11.5px] px-3 py-1 rounded-full disabled:opacity-40 flex items-center gap-1"
+                        style={{
+                          background: active ? 'var(--accent)' : 'var(--surface-2)',
+                          color: active ? 'var(--bg)' : 'var(--fg-2)',
+                          border: active ? 'none' : '1px solid var(--border)',
+                        }}>
+                        <Plug size={11} /> {pp.label}
                       </button>
                     );
                   })}

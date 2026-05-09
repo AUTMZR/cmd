@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "dev": "concurrently -n master,agent -c blue,green \"npm run dev -w apps/master\" \"npm run dev -w apps/agent\"",
-    "build": "npm run build -w packages/protocol && npm run build -w packages/rfs-mcp && npm run build -w apps/agent && npm run build -w apps/master",
+    "build": "npm run build -w packages/protocol && npm run build -w packages/plugin-api && npm run build -w packages/rfs-mcp && npm run build -w apps/agent && npm run build -w apps/master",
     "setup": "tsx scripts/setup.ts",
     "migrate": "npm run migrate -w apps/master"
   },

@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@autmzr/command-protocol": "*",
+    "@autmzr/plugin-api": "*",
     "ws": "^8.18.0"
   },
   "devDependencies": {

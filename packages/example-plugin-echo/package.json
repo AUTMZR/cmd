@@ -1,0 +1,12 @@
+{
+  "name": "@autmzr/example-plugin-echo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.js",
+  "description": "Reference Autmzr plugin — echoes the user prompt back. Copy to ~/.autmzr-command/plugins/ to test the loader.",
+  "license": "AGPL-3.0-or-later",
+  "dependencies": {
+    "@autmzr/plugin-api": "*"
+  }
+}

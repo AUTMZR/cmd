@@ -37,7 +37,9 @@ export type MessageType =
   // pty (persistent interactive terminal через псевдо-TTY)
   | 'pty.open' | 'pty.opened' | 'pty.data' | 'pty.resize' | 'pty.close' | 'pty.exit' | 'pty.error'
   // git
-  | 'git.clone' | 'git.clone.progress' | 'git.clone.reply';
+  | 'git.clone' | 'git.clone.progress' | 'git.clone.reply'
+  // plugin providers
+  | 'provider.chat' | 'provider.chat.event' | 'provider.chat.cancel';
 
 // ============ handshake ============
 
@@ -69,6 +71,18 @@ export interface HelloMessage extends Envelope {
     version?: string;
     logged_in: boolean;
   };
+  /** Plugin-provided AI providers (from ~/.autmzr-command/plugins/).
+   *  Каждый плагин сам сообщает id/label/models — мастер их кеширует и
+   *  показывает в UI наравне с захардкоженными claude/gemini/codex. */
+  plugin_providers?: Array<{
+    id: string;
+    label: string;
+    models: Array<{
+      id: string; label: string; icon?: string; hint?: string;
+      tier?: 'cheap' | 'balanced' | 'premium'; experimental?: boolean;
+    }>;
+    status: { installed: boolean; logged_in: boolean; version?: string; note?: string };
+  }>;
 }
 
 export interface HelloAckMessage extends Envelope {
@@ -404,6 +418,42 @@ export interface GitCloneReply extends Envelope {
   error?: string;
 }
 
+// ============ plugin providers ============
+
+/** Master → Agent: запустить чат через plugin-провайдера. */
+export interface ProviderChatRequest extends Envelope {
+  type: 'provider.chat';
+  id: string;
+  /** id провайдера, как объявлено плагином (e.g. 'aider', 'cursor'). */
+  provider_id: string;
+  prompt: string;
+  cwd: string;
+  instructions?: string;
+  model?: string;
+  effort?: 'low' | 'medium' | 'high' | 'extra-high' | 'max';
+  permission_mode?: 'default' | 'plan' | 'accept-edits' | 'bypass';
+  session_id?: string;
+}
+
+/** Agent → Master: стрим событий от плагина (text/tool_use/done/error/...). */
+export interface ProviderChatEvent extends Envelope {
+  type: 'provider.chat.event';
+  correlation_id: string;
+  event:
+    | { type: 'text'; text: string }
+    | { type: 'tool_use'; name: string; input?: unknown }
+    | { type: 'tool_result'; tool_use_id?: string; output?: unknown; error?: string }
+    | { type: 'session'; session_id: string }
+    | { type: 'error'; message: string; code?: string }
+    | { type: 'done'; result?: string; session_id?: string };
+}
+
+/** Master → Agent: отменить запущенный provider.chat. */
+export interface ProviderChatCancel extends Envelope {
+  type: 'provider.chat.cancel';
+  correlation_id: string;
+}
+
 // ============ union ============
 
 export type AnyMessage =
@@ -420,7 +470,8 @@ export type AnyMessage =
   | JobsRecap | JobsResume | JobsAck
   | PtyOpenRequest | PtyOpenedMessage | PtyDataMessage | PtyResizeMessage
   | PtyCloseMessage | PtyExitMessage | PtyErrorMessage
-  | GitCloneRequest | GitCloneProgress | GitCloneReply;
+  | GitCloneRequest | GitCloneProgress | GitCloneReply
+  | ProviderChatRequest | ProviderChatEvent | ProviderChatCancel;
 
 /** Защита агента: пути к которым НИКОГДА не допускаем fs-операции. */
 export const FS_BLOCKLIST_PATTERNS = [

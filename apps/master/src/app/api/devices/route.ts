@@ -13,7 +13,7 @@ export async function GET() {
             agent_logged_in, agent_installed, agent_version, agent_kind,
             gemini_logged_in, gemini_installed, gemini_version, preferred_agent,
             codex_logged_in, codex_installed, codex_version,
-            root_path, intent, created_at
+            root_path, intent, plugin_providers, created_at
      FROM pc.devices WHERE user_id = $1 ORDER BY created_at DESC`,
     [user.id],
   );
@@ -26,10 +26,15 @@ export async function PUT(req: NextRequest) {
   const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id, name, root_path, intent, preferred_agent } = await req.json();
-  // Валидация preferred_agent — только известные значения
-  const validPreferred = preferred_agent && ['claude-code', 'gemini-cli', 'codex-cli'].includes(preferred_agent)
-    ? preferred_agent
-    : null;
+  // Валидация preferred_agent — built-ins или любой plugin-id (alphanumeric+dash).
+  // Если плагин не загружен на устройстве, чат вернёт ошибку — это OK.
+  const validPreferred = (() => {
+    if (!preferred_agent) return null;
+    const builtins = ['claude-code', 'gemini-cli', 'codex-cli'];
+    if (builtins.includes(preferred_agent)) return preferred_agent;
+    if (/^[a-z0-9][a-z0-9_-]{0,63}$/i.test(preferred_agent)) return preferred_agent;
+    return null;
+  })();
   await query(
     `UPDATE pc.devices SET
        name            = COALESCE($1, name),

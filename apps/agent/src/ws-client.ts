@@ -13,7 +13,10 @@ import { handleStatus, probeClaude, probeGemini, probeCodex } from './handlers/s
 import { handlePtyOpen, handlePtyData, handlePtyResize, handlePtyClose, killAllPty } from './handlers/pty.js';
 import { jobList, jobRead, jobDelete, jobCleanup } from './job-buffer.js';
 import { maybeSelfUpdate } from './self-update.js';
+import { bootstrapPlugins, snapshotProviders, startChat, cancelChat } from './plugin-registry.js';
 import type { AgentConfig } from './config.js';
+
+let pluginsBooted = false;
 
 const AGENT_VERSION = readAgentVersion();
 
@@ -37,7 +40,13 @@ export function connect(cfg: AgentConfig): void {
 
   ws.on('open', async () => {
     log('connected');
-    const [claude, gemini, codex] = await Promise.all([probeClaude(), probeGemini(), probeCodex()]);
+    if (!pluginsBooted) {
+      pluginsBooted = true;
+      await bootstrapPlugins(log);
+    }
+    const [claude, gemini, codex, plugin_providers] = await Promise.all([
+      probeClaude(), probeGemini(), probeCodex(), snapshotProviders(),
+    ]);
     const capabilities: HelloMessage['capabilities'] = ['exec', 'claude', 'fs'];
     if (gemini.installed) capabilities.push('gemini');
     if (codex.installed) capabilities.push('codex');
@@ -52,6 +61,7 @@ export function connect(cfg: AgentConfig): void {
       claude,
       gemini,
       codex,
+      plugin_providers: plugin_providers.length ? plugin_providers : undefined,
     };
     send(ws, hello);
 
@@ -166,6 +176,35 @@ async function handle(ws: WebSocket, msg: AnyMessage): Promise<void> {
       const emit = makeProgressEmitter((p) => send(ws, p), msg.id);
       const reply = await handleGitClone(msg, emit);
       send(ws, reply);
+      return;
+    }
+
+    case 'provider.chat': {
+      const r = startChat({
+        providerId: msg.provider_id,
+        correlationId: msg.id,
+        prompt: msg.prompt,
+        cwd: msg.cwd,
+        instructions: msg.instructions,
+        model: msg.model,
+        effort: msg.effort,
+        permission_mode: msg.permission_mode,
+        session_id: msg.session_id,
+        emit: (event) => send(ws, {
+          type: 'provider.chat.event', correlation_id: msg.id, event,
+        }),
+      });
+      if (!r.ok) {
+        send(ws, {
+          type: 'provider.chat.event', correlation_id: msg.id,
+          event: { type: 'error', message: r.reason, code: 'unknown_provider' },
+        });
+      }
+      return;
+    }
+
+    case 'provider.chat.cancel': {
+      cancelChat(msg.correlation_id);
       return;
     }
 
