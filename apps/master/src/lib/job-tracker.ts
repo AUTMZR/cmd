@@ -134,7 +134,7 @@ export async function finalizeJob(
   }
 
   // Fire-and-forget push: не блокируем job-finalize, ошибки логируются в push.ts.
-  void sendToUser(Number(job.user_id), {
+  void sendToUser(job.user_id, {
     title: status === 'done' ? '✓ Task done' : '✗ Task failed',
     body: status === 'done'
       ? truncate(text || job.session_title || 'Assistant finished', 140)

@@ -6,8 +6,8 @@
 -- We delete on 410/404 push responses (subscription revoked by the browser).
 
 CREATE TABLE IF NOT EXISTS pc.push_subscriptions (
-  id           BIGSERIAL PRIMARY KEY,
-  user_id      BIGINT NOT NULL REFERENCES pc.users(id) ON DELETE CASCADE,
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      UUID NOT NULL REFERENCES pc.users(id) ON DELETE CASCADE,
   endpoint     TEXT NOT NULL UNIQUE,
   p256dh       TEXT NOT NULL,
   auth         TEXT NOT NULL,

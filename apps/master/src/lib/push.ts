@@ -47,14 +47,14 @@ export interface PushPayload {
 }
 
 interface SubRow {
-  id: number;
+  id: string;
   endpoint: string;
   p256dh: string;
   auth: string;
 }
 
 /** Шлёт push всем подпискам юзера. Не бросает при ошибках — логирует. */
-export async function sendToUser(userId: number, payload: PushPayload): Promise<void> {
+export async function sendToUser(userId: string, payload: PushPayload): Promise<void> {
   init();
   if (!enabled) return;
 
