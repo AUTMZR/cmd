@@ -7,6 +7,8 @@ import { api } from '@/lib/api';
 
 interface Props {
   needSetup: boolean;
+  /** GitHub OAuth настроен на бэке. Если false — кнопку прячем. */
+  githubOauth?: boolean;
   onAuth: (user: any) => void;
 }
 
@@ -19,7 +21,7 @@ function readInviteFromUrl(): string {
   return new URL(window.location.href).searchParams.get('invite') || '';
 }
 
-export default function AuthScreen({ needSetup, onAuth }: Props) {
+export default function AuthScreen({ needSetup, githubOauth, onAuth }: Props) {
   const t = useTranslations('auth');
   // needSetup === true → форсим регистрацию первого админа.
   // Иначе публичная регистрация (email + пароль, 14-дневный trial).
@@ -36,6 +38,13 @@ export default function AuthScreen({ needSetup, onAuth }: Props) {
     const code = readInviteFromUrl();
     if (code && !needSetup) setMode('signup');
   }, [needSetup]);
+
+  // GitHub OAuth callback может вернуть с ошибкой — поднимем её в err.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const oauthErr = new URL(window.location.href).searchParams.get('oauthError');
+    if (oauthErr) setErr(t('errorOauth', { reason: oauthErr }));
+  }, [t]);
 
   const isSignup = needSetup || mode === 'signup';
   const subtitleKey = needSetup ? 'subtitleSetup' : isSignup ? 'subtitleSignup' : 'subtitleSignin';
@@ -93,6 +102,24 @@ export default function AuthScreen({ needSetup, onAuth }: Props) {
             {t(subtitleKey)}
           </p>
         </div>
+
+        {githubOauth && (
+          <div className="surface p-6 mb-3 flex flex-col gap-3" style={{ boxShadow: 'var(--shadow)' }}>
+            <a href="/api/auth/github"
+              className="btn flex items-center justify-center gap-2"
+              style={{ background: '#24292f', color: '#fff', border: '1px solid #24292f' }}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+              </svg>
+              {isSignup ? t('githubSignup') : t('githubSignin')}
+            </a>
+            <div className="flex items-center gap-3 text-[11px] uppercase tracking-wider" style={{ color: 'var(--muted)' }}>
+              <div className="flex-1" style={{ height: 1, background: 'var(--border)' }} />
+              {t('or')}
+              <div className="flex-1" style={{ height: 1, background: 'var(--border)' }} />
+            </div>
+          </div>
+        )}
 
         <form onSubmit={submit} className="surface p-6 flex flex-col gap-4" style={{ boxShadow: 'var(--shadow)' }}>
           {isSignup && (

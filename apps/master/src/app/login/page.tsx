@@ -9,6 +9,7 @@ export default function LoginPage() {
   const t = useTranslations('auth');
   const router = useRouter();
   const [needSetup, setNeedSetup] = useState(false);
+  const [githubOauth, setGithubOauth] = useState(false);
   const [state, setState] = useState<'loading' | 'show'>('loading');
 
   useEffect(() => {
@@ -20,6 +21,7 @@ export default function LoginPage() {
           return;
         }
         setNeedSetup(!!j?.setup);
+        setGithubOauth(!!j?.githubOauth);
         setState('show');
       })
       .catch(() => setState('show'));
@@ -33,5 +35,5 @@ export default function LoginPage() {
     );
   }
 
-  return <AuthScreen needSetup={needSetup} onAuth={() => router.replace('/app')} />;
+  return <AuthScreen needSetup={needSetup} githubOauth={githubOauth} onAuth={() => router.replace('/app')} />;
 }

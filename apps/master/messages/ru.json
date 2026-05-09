@@ -385,6 +385,10 @@
     "footer": "self-hosted · AGPL-3.0 · подключай свои серверы",
     "loading": "Загрузка…",
     "errorFallback": "Ошибка {status}",
+    "errorOauth": "GitHub-логин не прошёл: {reason}",
+    "githubSignin": "Войти через GitHub",
+    "githubSignup": "Продолжить через GitHub",
+    "or": "или",
     "err": {
       "password_too_short": "Пароль минимум 8 символов",
       "password_needs_letters": "Пароль должен содержать буквы",

@@ -89,6 +89,91 @@ export async function register(email: string, password: string, name?: string, i
   };
 }
 
+/* ============================== GITHUB OAUTH =============================== */
+
+/**
+ * Залогинить юзера через GitHub. Линкование:
+ *   1. Если есть user с github_id = ghId → обновляем токен/login, выдаём сессию.
+ *   2. Иначе если есть user с email = ghEmail → линкуем github_id к нему.
+ *   3. Иначе создаём нового юзера (14-day trial, email_verified=true т.к. GitHub
+ *      уже верифицировал email).
+ *
+ * Возвращает User. Сессия выставлена в cookie.
+ */
+export async function loginOrRegisterWithGithub(args: {
+  ghId: number;
+  ghLogin: string;
+  ghName: string | null;
+  ghAvatarUrl: string;
+  ghEmail: string | null;
+  encryptedToken: string;
+}): Promise<User> {
+  // 1. Match by github_id
+  let row = await queryOne<User & { github_id: number | null }>(
+    `SELECT id, email, name, is_admin, trial_until, email_verified
+     FROM pc.users WHERE github_id = $1`,
+    [args.ghId],
+  );
+
+  // 2. Match by email
+  if (!row && args.ghEmail) {
+    row = await queryOne<User & { github_id: number | null }>(
+      `SELECT id, email, name, is_admin, trial_until, email_verified
+       FROM pc.users WHERE email = $1`,
+      [args.ghEmail.toLowerCase()],
+    );
+    if (row) {
+      await query(
+        `UPDATE pc.users SET github_id = $1, github_login = $2, github_avatar_url = $3,
+                            github_access_token = $4, email_verified = true
+         WHERE id = $5`,
+        [args.ghId, args.ghLogin, args.ghAvatarUrl, args.encryptedToken, row.id],
+      );
+    }
+  }
+
+  // 3. Create
+  if (!row) {
+    if (!args.ghEmail) throw new Error('github_email_unavailable');
+    const trialUntil = new Date(Date.now() + TRIAL_DAYS * 24 * 3600 * 1000).toISOString();
+    const rows = await query<{ id: string }>(
+      `INSERT INTO pc.users
+         (email, password_hash, name, is_admin, trial_until, email_verified,
+          github_id, github_login, github_avatar_url, github_access_token)
+       VALUES ($1, NULL, $2, false, $3, true, $4, $5, $6, $7)
+       RETURNING id`,
+      [
+        args.ghEmail.toLowerCase(), args.ghName, trialUntil,
+        args.ghId, args.ghLogin, args.ghAvatarUrl, args.encryptedToken,
+      ],
+    );
+    row = {
+      id: rows[0].id, email: args.ghEmail.toLowerCase(), name: args.ghName,
+      is_admin: false, trial_until: trialUntil, email_verified: true,
+    } as User & { github_id: number | null };
+  } else {
+    // Существующий — обновляем токен (juser мог reauthorize).
+    await query(
+      `UPDATE pc.users SET github_access_token = $1, github_login = $2, github_avatar_url = $3
+       WHERE id = $4`,
+      [args.encryptedToken, args.ghLogin, args.ghAvatarUrl, row.id],
+    );
+  }
+
+  // Issue session
+  const sid = uuidv4();
+  await query(`INSERT INTO pc.user_sessions (id, user_id) VALUES ($1, $2)`, [sid, row.id]);
+  const jar = await cookies();
+  jar.set(SESSION_COOKIE, sid, {
+    httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production',
+    maxAge: 60 * 60 * 24 * 30, path: '/',
+  });
+  return {
+    id: row.id, email: row.email, name: row.name, is_admin: row.is_admin,
+    trial_until: row.trial_until, email_verified: row.email_verified,
+  };
+}
+
 /* ============================== EMAIL VERIFICATION ========================= */
 
 /** Создаёт verification-токен для юзера. Возвращает сам token (его шлём в email). */

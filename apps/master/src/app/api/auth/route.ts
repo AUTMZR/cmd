@@ -8,12 +8,16 @@ import { ensureCsrfCookie, requireCsrf } from '@/lib/csrf';
 import { auditAuth, clientIpFrom } from '@/lib/audit';
 import { log } from '@/lib/log';
 import { sendVerificationEmail } from '@/lib/email';
+import { isGithubOAuthEnabled } from '@/lib/oauth-github';
 
 /** GET — текущий пользователь / нужен ли setup. Также выставляет CSRF cookie. */
 export async function GET() {
   const user = await getAuthUser();
   const hasUser = await hasAnyUser();
-  const res = NextResponse.json(user ? { user } : { user: null, setup: !hasUser });
+  const githubOauth = isGithubOAuthEnabled();
+  const res = NextResponse.json(user
+    ? { user, githubOauth }
+    : { user: null, setup: !hasUser, githubOauth });
   await ensureCsrfCookie(res);
   return res;
 }

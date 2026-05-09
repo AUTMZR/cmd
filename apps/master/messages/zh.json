@@ -385,6 +385,10 @@
     "footer": "自托管 · AGPL-3.0 · 连接你自己的服务器",
     "loading": "加载中…",
     "errorFallback": "错误 {status}",
+    "errorOauth": "GitHub 登录失败: {reason}",
+    "githubSignin": "通过 GitHub 登录",
+    "githubSignup": "通过 GitHub 继续",
+    "or": "或",
     "err": {
       "password_too_short": "密码最少 8 个字符",
       "password_needs_letters": "密码必须包含字母",
