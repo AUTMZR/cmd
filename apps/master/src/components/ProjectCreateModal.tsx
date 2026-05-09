@@ -36,6 +36,8 @@ type Step = 'device' | 'action' | 'pick-existing' | 'pick-parent' | 'name-new';
 
 export default function ProjectCreateModal({ devices, onClose, onCreated }: Props) {
   const t = useTranslations('project');
+  const tm = useTranslations('models');
+  const modelKey = (id: string) => id.replace(/[.-]/g, '_');
   const [step, setStep] = useState<Step>('device');
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [claudeDeviceId, setClaudeDeviceId] = useState<string | null>(null);
@@ -325,7 +327,7 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
                             <span className="text-[12.5px] font-medium truncate flex-1">{m.label}</span>
                           </div>
                           <div className="text-[10px] font-mono truncate w-full" style={{ color: 'var(--muted)' }}>
-                            {m.tags[0]}
+                            {tm(`${modelKey(m.id)}.tag`)}
                           </div>
                         </button>
                       );
@@ -333,7 +335,7 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
                   </div>
                   {defaultModel && (
                     <div className="text-[11px]" style={{ color: 'var(--muted)' }}>
-                      {availableModels.find(m => m.id === defaultModel)?.hint}
+                      {tm(`${modelKey(defaultModel)}.hint`)}
                     </div>
                   )}
                 </div>

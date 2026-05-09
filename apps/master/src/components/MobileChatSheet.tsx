@@ -37,6 +37,8 @@ export default function MobileChatSheet({
   onOpenFiles, onOpenTerminal, onInsertCommand,
 }: Props) {
   const t = useTranslations('mobileChat');
+  const tm = useTranslations('models');
+  const modelKey = (id: string) => id.replace(/[.-]/g, '_');
   const MODELS_FOR_PROVIDER = MODEL_CATALOG[provider];
   const normalizedModel = normalizeModel(model);
   const [commandsOpen, setCommandsOpen] = useState(false);
@@ -141,7 +143,7 @@ export default function MobileChatSheet({
                         </span>
                       )}
                     </span>
-                    <span className="block text-[12px] mt-0.5" style={{ color: 'var(--muted)' }}>{m.hint}</span>
+                    <span className="block text-[12px] mt-0.5" style={{ color: 'var(--muted)' }}>{tm(`${modelKey(m.id)}.hint`)}</span>
                   </span>
                   {on && <span className="font-semibold mt-0.5" style={{ color: 'var(--accent)' }}>✓</span>}
                 </button>

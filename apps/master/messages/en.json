@@ -791,5 +791,14 @@
       "showDetails": "▸ Show details",
       "hideDetails": "▾ Hide details"
     }
+  },
+  "models": {
+    "haiku": { "hint": "Simple edits, boilerplate, CRUD", "tag": "fast" },
+    "sonnet": { "hint": "Fits 80% of tasks — default", "tag": "balanced" },
+    "opus": { "hint": "Architecture, hard debugging, deep analysis", "tag": "smart" },
+    "gemini_2_5_flash": { "hint": "Fast and cheap — for simple tasks and bulk processing", "tag": "fast" },
+    "gemini_2_5_pro": { "hint": "Serious tasks, large context", "tag": "smart" },
+    "gpt_5_3_codex": { "hint": "Strongest Codex model for complex coding tasks", "tag": "agentic" },
+    "gpt_5_codex": { "hint": "Faster and cheaper for everyday dev tasks", "tag": "balanced" }
   }
 }

@@ -149,6 +149,8 @@ export function ModelEffortPill({
   provider?: Provider;
 }) {
   const t = useTranslations('app.welcome');
+  const tm = useTranslations('models');
+  const modelKey = (id: string) => id.replace(/[.-]/g, '_');
   const { open, setOpen, ref } = usePopover();
   const modelsForProvider = MODEL_CATALOG[provider];
 
@@ -218,7 +220,7 @@ export function ModelEffortPill({
                     </span>
                   )}
                 </span>
-                <span className="block text-[10.5px]" style={{ color: 'var(--muted)' }}>{m.hint}</span>
+                <span className="block text-[10.5px]" style={{ color: 'var(--muted)' }}>{tm(`${modelKey(m.id)}.hint`)}</span>
               </span>
               {normalized === m.id && <span>✓</span>}
               <span className="text-[10.5px]" style={{ color: 'var(--muted)' }}>{i + 1}</span>

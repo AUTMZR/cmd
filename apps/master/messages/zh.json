@@ -791,5 +791,14 @@
       "showDetails": "▸ 显示详情",
       "hideDetails": "▾ 隐藏详情"
     }
+  },
+  "models": {
+    "haiku": { "hint": "简单修改、模板代码、CRUD", "tag": "快速" },
+    "sonnet": { "hint": "适合 80% 的任务 — 默认", "tag": "平衡" },
+    "opus": { "hint": "架构、复杂调试、深度分析", "tag": "智能" },
+    "gemini_2_5_flash": { "hint": "快速便宜 — 适合简单任务和批量处理", "tag": "快速" },
+    "gemini_2_5_pro": { "hint": "严肃任务,大上下文", "tag": "智能" },
+    "gpt_5_3_codex": { "hint": "最强的 Codex 模型,适合复杂编码任务", "tag": "智能体" },
+    "gpt_5_codex": { "hint": "日常开发任务更快更便宜", "tag": "平衡" }
   }
 }
