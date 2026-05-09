@@ -7,6 +7,7 @@ import type { AnyMessage, HelloMessage, JobsRecap, JobsResume, JobsAck } from '@
 import { PROTOCOL_VERSION } from '@autmzr/command-protocol';
 import { handleExec } from './handlers/exec.js';
 import { handleFsList, handleFsRead, handleFsWrite, handleFsMkdir, handleFsDelete } from './handlers/fs.js';
+import { handleGitClone, makeProgressEmitter } from './handlers/git.js';
 import { handleClaude } from './handlers/claude.js';
 import { handleStatus, probeClaude, probeGemini, probeCodex } from './handlers/status.js';
 import { handlePtyOpen, handlePtyData, handlePtyResize, handlePtyClose, killAllPty } from './handlers/pty.js';
@@ -149,6 +150,13 @@ async function handle(ws: WebSocket, msg: AnyMessage): Promise<void> {
     case 'fs.write':  send(ws, await handleFsWrite(msg)); return;
     case 'fs.mkdir':  send(ws, await handleFsMkdir(msg)); return;
     case 'fs.delete': send(ws, await handleFsDelete(msg)); return;
+
+    case 'git.clone': {
+      const emit = makeProgressEmitter((p) => send(ws, p), msg.id);
+      const reply = await handleGitClone(msg, emit);
+      send(ws, reply);
+      return;
+    }
 
     case 'status.request': send(ws, await handleStatus(msg)); return;
 

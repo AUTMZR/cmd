@@ -35,7 +35,9 @@ export type MessageType =
   // jobs (resilience across disconnects/restarts)
   | 'jobs.recap' | 'jobs.resume' | 'jobs.ack'
   // pty (persistent interactive terminal через псевдо-TTY)
-  | 'pty.open' | 'pty.opened' | 'pty.data' | 'pty.resize' | 'pty.close' | 'pty.exit' | 'pty.error';
+  | 'pty.open' | 'pty.opened' | 'pty.data' | 'pty.resize' | 'pty.close' | 'pty.exit' | 'pty.error'
+  // git
+  | 'git.clone' | 'git.clone.progress' | 'git.clone.reply';
 
 // ============ handshake ============
 
@@ -358,6 +360,43 @@ export interface PtyErrorMessage extends Envelope {
   code?: 'missing_node_pty' | 'spawn_failed' | 'unknown';
 }
 
+// ============ git ============
+
+/** Master → Agent: клонировать репо в указанный parent_path/folder_name.
+ *  parent_path должен быть абсолютным путём, который существует на устройстве. */
+export interface GitCloneRequest extends Envelope {
+  type: 'git.clone';
+  id: string;
+  /** HTTPS URL репозитория. Поддерживается https://github.com/owner/repo[.git]. */
+  repo_url: string;
+  /** Абсолютный путь к родителю; финальный путь будет parent_path/folder_name. */
+  parent_path: string;
+  /** Имя папки. Если совпадает с существующей — ошибка (не перезаписываем). */
+  folder_name: string;
+  /** Опциональный access-токен GitHub для приватных репо.
+   *  Передаётся как https://x-access-token:TOKEN@github.com/... — токен НЕ
+   *  оседает в git config (clone'ится, потом мы можем его убрать из remote). */
+  token?: string;
+  /** depth=1 для shallow-клона. По умолчанию 1 — экономим время и трафик. */
+  depth?: number;
+}
+
+/** Стриминг прогресса (stderr из git). */
+export interface GitCloneProgress extends Envelope {
+  type: 'git.clone.progress';
+  correlation_id: string;
+  text: string;
+}
+
+export interface GitCloneReply extends Envelope {
+  type: 'git.clone.reply';
+  correlation_id: string;
+  ok: boolean;
+  /** Финальный путь до клонированной папки (если ok). */
+  path?: string;
+  error?: string;
+}
+
 // ============ union ============
 
 export type AnyMessage =
@@ -373,7 +412,8 @@ export type AnyMessage =
   | StatusRequest | StatusReply
   | JobsRecap | JobsResume | JobsAck
   | PtyOpenRequest | PtyOpenedMessage | PtyDataMessage | PtyResizeMessage
-  | PtyCloseMessage | PtyExitMessage | PtyErrorMessage;
+  | PtyCloseMessage | PtyExitMessage | PtyErrorMessage
+  | GitCloneRequest | GitCloneProgress | GitCloneReply;
 
 /** Защита агента: пути к которым НИКОГДА не допускаем fs-операции. */
 export const FS_BLOCKLIST_PATTERNS = [

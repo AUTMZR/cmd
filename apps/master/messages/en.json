@@ -581,7 +581,22 @@
     "creatingIn": "Creating in folder:",
     "folderNameLabel": "Folder name",
     "namePlaceholder": "name",
-    "createProject": "Create project"
+    "createProject": "Create project",
+    "importGithubTitle": "Import from GitHub",
+    "importGithubBody": "Pick a repo and clone it to a device.",
+    "stepPickGithubRepo": "Pick a repository",
+    "stepClone": "Cloning…",
+    "breadcrumbImportGithub": "Import from GitHub",
+    "repoSearchPlaceholder": "filter — owner/repo",
+    "loadingRepos": "Loading repositories…",
+    "noRepos": "No repositories found.",
+    "connectGithub": "Connect GitHub",
+    "connectGithubBody": "To list your repositories we need access to your GitHub account. Click below to connect — we'll only read repo metadata and clone what you pick.",
+    "cloning": "Cloning {repo}…",
+    "cloneDone": "Clone done. Creating project…",
+    "cloneFailed": "Clone failed.",
+    "cloneCreatedAt": "Cloned to {path}",
+    "working": "working…"
   },
   "device": {
     "online": "online",

@@ -581,7 +581,22 @@
     "creatingIn": "在文件夹中创建:",
     "folderNameLabel": "文件夹名称",
     "namePlaceholder": "名称",
-    "createProject": "创建项目"
+    "createProject": "创建项目",
+    "importGithubTitle": "从 GitHub 导入",
+    "importGithubBody": "选择仓库并克隆到设备。",
+    "stepPickGithubRepo": "选择仓库",
+    "stepClone": "克隆中…",
+    "breadcrumbImportGithub": "从 GitHub 导入",
+    "repoSearchPlaceholder": "筛选 — owner/repo",
+    "loadingRepos": "加载仓库中…",
+    "noRepos": "未找到仓库。",
+    "connectGithub": "连接 GitHub",
+    "connectGithubBody": "要显示仓库列表,需要访问你的 GitHub 账户。点击下方按钮连接 — 我们只读取仓库元数据并克隆你选择的内容。",
+    "cloning": "正在克隆 {repo}…",
+    "cloneDone": "克隆完成。正在创建项目…",
+    "cloneFailed": "克隆失败。",
+    "cloneCreatedAt": "已克隆到 {path}",
+    "working": "处理中…"
   },
   "device": {
     "online": "在线",

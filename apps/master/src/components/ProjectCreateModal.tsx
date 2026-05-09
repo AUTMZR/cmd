@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ArrowLeft, X, FolderOpen, FolderPlus, Loader2, ChevronRight } from 'lucide-react';
+import { ArrowLeft, X, FolderOpen, FolderPlus, Loader2, ChevronRight, Github, Lock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import DeviceBrowser from './DeviceBrowser';
 import { effectiveIntent, type DeviceIntent } from '@/lib/device-intent';
@@ -32,7 +32,14 @@ interface Props {
  * слева ◀ для возврата на предыдущий шаг.
  */
 
-type Step = 'device' | 'action' | 'pick-existing' | 'pick-parent' | 'name-new';
+type Step = 'device' | 'action' | 'pick-existing' | 'pick-parent' | 'name-new'
+  | 'pick-github-repo' | 'clone-progress';
+
+interface GhRepo {
+  id: number; full_name: string; name: string; private: boolean;
+  description: string | null; clone_url: string; default_branch: string;
+  language: string | null;
+}
 
 export default function ProjectCreateModal({ devices, onClose, onCreated }: Props) {
   const t = useTranslations('project');
@@ -46,6 +53,15 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
   const [defaultModel, setDefaultModel] = useState<string | null>(null);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
+  // GitHub clone state — отдельная ветка wizard'а.
+  const [ghLoading, setGhLoading] = useState(false);
+  const [ghNeedConnect, setGhNeedConnect] = useState(false);
+  const [ghRepos, setGhRepos] = useState<GhRepo[]>([]);
+  const [ghQuery, setGhQuery] = useState('');
+  const [ghPickedRepo, setGhPickedRepo] = useState<GhRepo | null>(null);
+  const [cloneLog, setCloneLog] = useState('');
+  const [cloneError, setCloneError] = useState<string | null>(null);
+  const [cloneDonePath, setCloneDonePath] = useState<string | null>(null);
 
   const selectedDevice = devices.find(d => d.id === deviceId);
   const needsClaudeDevice = !!selectedDevice && effectiveIntent(selectedDevice) === 'fs-only';
@@ -80,8 +96,90 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
   function goBack() {
     setErr('');
     if (step === 'action') setStep('device');
-    else if (step === 'pick-existing' || step === 'pick-parent') setStep('action');
+    else if (step === 'pick-existing' || step === 'pick-parent') {
+      // pick-parent во время clone-flow ведёт обратно в repo-picker
+      if (ghPickedRepo && step === 'pick-parent') { setStep('pick-github-repo'); return; }
+      setStep('action');
+    }
     else if (step === 'name-new') { setParentPath(null); setStep('pick-parent'); }
+    else if (step === 'pick-github-repo') { setGhPickedRepo(null); setStep('action'); }
+    else if (step === 'clone-progress') {
+      // На clone-progress кнопка back закрывает stream — пользователь отменяет.
+      setCloneLog(''); setCloneError(null); setCloneDonePath(null);
+      setStep('pick-parent');
+    }
+  }
+
+  async function loadGhRepos() {
+    setGhLoading(true); setErr(''); setGhNeedConnect(false);
+    try {
+      const r = await fetch('/api/github/repos');
+      if (r.status === 412) { setGhNeedConnect(true); return; }
+      if (!r.ok) { setErr(`GitHub error ${r.status}`); return; }
+      const j = await r.json();
+      setGhRepos(j.repos || []);
+    } catch (e: any) {
+      setErr(e?.message || 'github fetch failed');
+    } finally {
+      setGhLoading(false);
+    }
+  }
+
+  async function startClone(parent: string) {
+    if (!ghPickedRepo || !deviceId) return;
+    setStep('clone-progress');
+    setCloneLog(''); setCloneError(null); setCloneDonePath(null);
+    setBusy(true);
+
+    const folderName = ghPickedRepo.name;
+    const res = await fetch(`/api/devices/${deviceId}/git-clone`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        repo_url: ghPickedRepo.clone_url.replace(/\.git$/, ''),
+        parent_path: parent, folder_name: folderName,
+        useGithubToken: ghPickedRepo.private,
+      }),
+    });
+    if (!res.ok || !res.body) {
+      setBusy(false);
+      setCloneError(`HTTP ${res.status}`);
+      return;
+    }
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+    let donePath: string | null = null;
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split('\n'); buf = lines.pop() || '';
+      for (const raw of lines) {
+        const ln = raw.trim();
+        if (!ln.startsWith('data:')) continue;
+        try {
+          const ev = JSON.parse(ln.slice(5).trim());
+          if (ev.type === 'out') setCloneLog(l => l + ev.text);
+          else if (ev.type === 'done') donePath = ev.path;
+          else if (ev.type === 'error') setCloneError(ev.message || 'clone failed');
+        } catch {}
+      }
+    }
+    setBusy(false);
+    if (donePath) {
+      setCloneDonePath(donePath);
+      // Сразу создаём проект — clone уже сделал основную работу.
+      const r = await fetch('/api/projects', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: folderName, device_id: deviceId, path: donePath,
+          claude_device_id: needsClaudeDevice ? claudeDeviceId : null,
+          default_model: defaultModel,
+        }),
+      });
+      if (r.ok) { const j = await r.json(); onCreated(j.id); }
+      else { const j = await r.json().catch(() => ({})); setCloneError(j.error || 'project create failed'); }
+    }
   }
 
   async function createFromExisting(path: string) {
@@ -136,14 +234,17 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
     step === 'action' ? t('stepAction') :
     step === 'pick-existing' ? t('stepPickExisting') :
     step === 'pick-parent' ? t('stepPickParent') :
+    step === 'pick-github-repo' ? t('stepPickGithubRepo') :
+    step === 'clone-progress' ? t('stepClone') :
     t('stepName');
 
   const breadcrumb = [
     t('breadcrumbRoot'),
     selectedDevice?.name,
     step === 'pick-existing' ? t('breadcrumbOpenExisting') :
-    step === 'pick-parent' || step === 'name-new' ? t('breadcrumbCreateNew') :
-    null,
+    (step === 'pick-parent' && !ghPickedRepo) || step === 'name-new' ? t('breadcrumbCreateNew') :
+    step === 'pick-github-repo' || (step === 'pick-parent' && ghPickedRepo) || step === 'clone-progress'
+      ? t('breadcrumbImportGithub') : null,
   ].filter(Boolean).join(' · ');
 
   return (
@@ -304,6 +405,24 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
                 <ChevronRight size={16} style={{ color: 'var(--muted)' }} />
               </button>
 
+              <button type="button" disabled={!proxyOk}
+                onClick={() => { setStep('pick-github-repo'); loadGhRepos(); }}
+                className="p-4 rounded-xl text-left flex items-start gap-3 disabled:opacity-40"
+                style={{
+                  border: '1px solid var(--border)',
+                  background: 'var(--surface-2)',
+                  minHeight: 80,
+                }}>
+                <Github size={22} />
+                <div className="flex-1">
+                  <div className="text-[14px] font-medium">{t('importGithubTitle')}</div>
+                  <div className="text-[11.5px] mt-0.5" style={{ color: 'var(--muted)' }}>
+                    {t('importGithubBody')}
+                  </div>
+                </div>
+                <ChevronRight size={16} style={{ color: 'var(--muted)' }} />
+              </button>
+
               {/* Селектор модели — для осознанного выбора «тяжёлая/лёгкая» под задачу */}
               {proxyOk && (
                 <div className="mt-2 flex flex-col gap-1.5">
@@ -358,6 +477,7 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
                 onClose={() => { /* back-arrow в header обрабатывает это */ }}
                 onPick={(path) => {
                   if (step === 'pick-existing') createFromExisting(path);
+                  else if (ghPickedRepo) { setParentPath(path); startClone(path); }
                   else { setParentPath(path); setStep('name-new'); }
                 }}
                 pickLabel={step === 'pick-parent' ? t('createHere') : t('pickFolder')}
@@ -387,6 +507,88 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
                 {busy && <Loader2 size={14} className="animate-spin" />}
                 {t('createProject')}
               </button>
+            </div>
+          )}
+
+          {/* === ШАГ 3c: выбор GitHub-репо === */}
+          {step === 'pick-github-repo' && (
+            <div className="flex flex-col gap-2">
+              {ghNeedConnect ? (
+                <div className="p-4 rounded-xl flex flex-col gap-3" style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
+                  <div className="text-[13px]">{t('connectGithubBody')}</div>
+                  <a href="/api/auth/github" className="btn flex items-center justify-center gap-2"
+                    style={{ background: '#24292f', color: '#fff' }}>
+                    <Github size={14} /> {t('connectGithub')}
+                  </a>
+                </div>
+              ) : (
+                <>
+                  <input value={ghQuery} onChange={(e) => setGhQuery(e.target.value)}
+                    placeholder={t('repoSearchPlaceholder')}
+                    className="px-3 py-2.5 rounded-lg text-[14px] bg-[var(--bg)] outline-none"
+                    style={{ border: '1px solid var(--border)', color: 'var(--fg)' }} />
+                  {ghLoading && (
+                    <div className="flex items-center gap-2 px-2 py-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+                      <Loader2 size={14} className="animate-spin" />
+                      {t('loadingRepos')}
+                    </div>
+                  )}
+                  {!ghLoading && ghRepos.length === 0 && (
+                    <div className="px-2 py-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+                      {t('noRepos')}
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-1 max-h-[50dvh] overflow-y-auto">
+                    {ghRepos
+                      .filter((r) => !ghQuery.trim() || r.full_name.toLowerCase().includes(ghQuery.toLowerCase()))
+                      .map((r) => (
+                        <button key={r.id} type="button"
+                          onClick={() => { setGhPickedRepo(r); setStep('pick-parent'); }}
+                          className="px-3 py-2.5 rounded-lg text-left flex items-start gap-2"
+                          style={{ border: '1px solid var(--border)', background: 'var(--surface-2)', minHeight: 44 }}>
+                          {r.private ? <Lock size={14} style={{ color: 'var(--muted)' }} /> : <Github size={14} style={{ color: 'var(--muted)' }} />}
+                          <div className="flex-1 min-w-0">
+                            <div className="text-[13px] font-medium font-mono truncate">{r.full_name}</div>
+                            {r.description && (
+                              <div className="text-[11.5px] truncate mt-0.5" style={{ color: 'var(--muted)' }}>{r.description}</div>
+                            )}
+                          </div>
+                          {r.language && (
+                            <span className="text-[10px] font-mono shrink-0 mt-0.5" style={{ color: 'var(--muted)' }}>{r.language}</span>
+                          )}
+                        </button>
+                      ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* === ШАГ 4: clone progress === */}
+          {step === 'clone-progress' && ghPickedRepo && (
+            <div className="flex flex-col gap-2">
+              <div className="text-[12.5px]" style={{ color: 'var(--muted)' }}>
+                {cloneDonePath ? t('cloneDone') : cloneError ? t('cloneFailed') : t('cloning', { repo: ghPickedRepo.full_name })}
+              </div>
+              <pre className="font-mono text-[11px] p-3 rounded-lg whitespace-pre-wrap break-all max-h-60 overflow-y-auto"
+                style={{ background: '#0a0a0a', color: '#e5e7eb', minHeight: 120 }}>
+                {cloneLog || '...'}
+              </pre>
+              {cloneError && (
+                <div className="text-[12.5px] px-3 py-2 rounded-lg" style={{ background: 'var(--danger-bg)', color: 'var(--danger)' }}>
+                  ✗ {cloneError}
+                </div>
+              )}
+              {cloneDonePath && (
+                <div className="text-[12.5px] px-3 py-2 rounded-lg flex items-center gap-2" style={{ background: 'var(--accent-light)', color: 'var(--ok)' }}>
+                  ✓ {t('cloneCreatedAt', { path: cloneDonePath })}
+                </div>
+              )}
+              {busy && (
+                <div className="flex items-center gap-2 text-[12px]" style={{ color: 'var(--muted)' }}>
+                  <Loader2 size={14} className="animate-spin" /> {t('working')}
+                </div>
+              )}
             </div>
           )}
 

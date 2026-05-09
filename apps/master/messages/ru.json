@@ -581,7 +581,22 @@
     "creatingIn": "Создаю в папке:",
     "folderNameLabel": "Имя папки",
     "namePlaceholder": "имя",
-    "createProject": "Создать проект"
+    "createProject": "Создать проект",
+    "importGithubTitle": "Импорт из GitHub",
+    "importGithubBody": "Выбери репо и клонируй его на устройство.",
+    "stepPickGithubRepo": "Выбор репозитория",
+    "stepClone": "Клонирую…",
+    "breadcrumbImportGithub": "Импорт из GitHub",
+    "repoSearchPlaceholder": "фильтр — owner/repo",
+    "loadingRepos": "Загружаю репозитории…",
+    "noRepos": "Репозитории не найдены.",
+    "connectGithub": "Подключить GitHub",
+    "connectGithubBody": "Чтобы показать репозитории, нужен доступ к твоему GitHub-аккаунту. Нажми ниже — прочитаем только метаданные и склонируем то, что ты выберешь.",
+    "cloning": "Клонирую {repo}…",
+    "cloneDone": "Клонирование готово. Создаю проект…",
+    "cloneFailed": "Клонирование не удалось.",
+    "cloneCreatedAt": "Склонировано в {path}",
+    "working": "работаю…"
   },
   "device": {
     "online": "online",
