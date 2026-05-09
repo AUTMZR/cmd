@@ -43,6 +43,12 @@ export default function ClientBoot() {
     if (!document.cookie.includes('pc_csrf=')) {
       orig('/api/auth', { credentials: 'same-origin' }).catch(() => {});
     }
+
+    // Регистрируем service worker для Web Push (если поддерживается).
+    // На HTTP в dev SW не зарегистрируется — это нормально, push не работает без HTTPS.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => { /* ignore — dev на http или iframe */ });
+    }
   }, []);
   return null;
 }

@@ -352,7 +352,19 @@
     },
     "themeHint": "保存在此设备上。",
     "logout": "退出",
-    "language": "语言"
+    "language": "语言",
+    "notifications": {
+      "header": "推送通知",
+      "hint": "长任务完成时收到系统通知。",
+      "enable": "开启",
+      "enabling": "正在请求权限…",
+      "enabled": "✓ 已在此设备开启",
+      "disable": "关闭",
+      "denied": "权限已被拒绝。请在浏览器设置中重新开启。",
+      "unsupported": "此浏览器不支持推送通知。",
+      "noVapid": "服务器未配置推送。",
+      "iosHint": "iOS:先「添加到主屏幕」,再从那里打开。"
+    }
   },
   "auth": {
     "appName": "Autmzr Command",

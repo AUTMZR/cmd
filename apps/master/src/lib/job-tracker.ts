@@ -1,4 +1,5 @@
 import { query, queryOne } from './db';
+import { sendToUser } from './push';
 import type { AnyMessage, ClaudeEvent, ClaudeDone, ClaudeError } from '@autmzr/command-protocol';
 
 /**
@@ -99,8 +100,10 @@ export async function finalizeJob(
   errorText?: string,
 ): Promise<void> {
   const job = await queryOne<{
-    session_id: string; accumulated_text: string; tool_events: any; status: string;
-  }>(`SELECT session_id, accumulated_text, tool_events, status FROM pc.chat_jobs WHERE id = $1`, [jobId]);
+    session_id: string; user_id: string; accumulated_text: string; tool_events: any; status: string;
+    session_title: string | null;
+  }>(`SELECT j.session_id, j.user_id, j.accumulated_text, j.tool_events, j.status, s.title AS session_title
+      FROM pc.chat_jobs j LEFT JOIN pc.sessions s ON s.id = j.session_id WHERE j.id = $1`, [jobId]);
   if (!job) return;
   if (job.status !== 'running') return; // уже финализирован
 
@@ -129,6 +132,20 @@ export async function finalizeJob(
   } else {
     await query(`UPDATE pc.sessions SET updated_at = NOW() WHERE id = $1`, [job.session_id]);
   }
+
+  // Fire-and-forget push: не блокируем job-finalize, ошибки логируются в push.ts.
+  void sendToUser(Number(job.user_id), {
+    title: status === 'done' ? '✓ Task done' : '✗ Task failed',
+    body: status === 'done'
+      ? truncate(text || job.session_title || 'Assistant finished', 140)
+      : truncate(errorText || 'See chat for details', 140),
+    url: `/app?session=${encodeURIComponent(job.session_id)}`,
+    tag: `job-${jobId}`,
+  }).catch(() => { /* swallow — already logged */ });
+}
+
+function truncate(s: string, n: number): string {
+  return s.length <= n ? s : s.slice(0, n - 1) + '…';
 }
 
 /** Список running jobs на устройстве. */

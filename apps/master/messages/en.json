@@ -352,7 +352,19 @@
     },
     "themeHint": "Saved on this device.",
     "logout": "Sign out",
-    "language": "Language"
+    "language": "Language",
+    "notifications": {
+      "header": "Push notifications",
+      "hint": "Get a system notification when a long task finishes.",
+      "enable": "Enable",
+      "enabling": "Requesting permission…",
+      "enabled": "✓ Enabled on this device",
+      "disable": "Disable",
+      "denied": "Permission was denied. Re-enable it in browser settings.",
+      "unsupported": "Push notifications aren't supported in this browser.",
+      "noVapid": "Push isn't configured on this server.",
+      "iosHint": "On iOS: add to Home Screen first, then open from there."
+    }
   },
   "auth": {
     "appName": "Autmzr Command",

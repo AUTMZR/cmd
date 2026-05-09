@@ -18,6 +18,7 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Sparkles, Ticket, Palette, User as UserIcon, X, LogOut, Check, AlertCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import NotificationsCard from './NotificationsCard';
 
 const InvitesPanel = dynamic(() => import('./InvitesPanel'), { ssr: false, loading: () => null });
 
@@ -152,6 +153,7 @@ export default function Settings({
               </div>
             </div>
           </div>
+          <NotificationsCard />
           <button
             onClick={logout}
             className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium"
