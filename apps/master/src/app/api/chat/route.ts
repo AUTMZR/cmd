@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { getAuthUser } from '@/lib/auth';
+import { requireActiveAccess } from '@/lib/access';
 import { query, queryOne } from '@/lib/db';
 import { hub } from '@/lib/ws-hub';
 import { v4 as uuidv4 } from 'uuid';
@@ -39,6 +40,8 @@ async function fetchProjectMemory(userId: string, fsDeviceId: string, path: stri
 export async function POST(req: NextRequest) {
   const user = await getAuthUser();
   if (!user) return new Response('Unauthorized', { status: 401 });
+  const blocked = requireActiveAccess(user);
+  if (blocked) return blocked;
 
   const { message, sessionId, projectId, model: requestedModel,
           permissionMode = 'bypassPermissions', effort = 'medium' } = await req.json();

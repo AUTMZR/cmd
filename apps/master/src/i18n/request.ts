@@ -15,7 +15,7 @@ import { DEFAULT_LOCALE, LOCALE_COOKIE, isLocale } from './locales';
 export default getRequestConfig(async () => {
   const hdrs = await headers();
   const pathname = hdrs.get('x-pathname') || '';
-  const forceEn = pathname === '/login' || pathname.startsWith('/app');
+  const forceEn = pathname === '/login' || pathname.startsWith('/app') || pathname === '/upgrade' || pathname === '/verify-email';
 
   let locale = DEFAULT_LOCALE;
   if (!forceEn) {

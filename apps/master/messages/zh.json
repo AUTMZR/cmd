@@ -804,6 +804,21 @@
       "hideDetails": "▾ 隐藏详情"
     }
   },
+  "upgrade": {
+    "title": "试用期已结束",
+    "expiredAgo": "14 天试用期已于 {days} 天前结束。",
+    "expiredJust": "14 天试用期刚刚结束。",
+    "intro": "继续在 cmd.autmzr.com 使用 Autmzr Cmd:",
+    "option1": "给我们发邮件 — 帮你开通付费方案(Stripe 自助版本将在 v0.4 推出)。",
+    "option2": "或在自己服务器上自托管 Autmzr — AGPL-3.0,无时间限制。",
+    "option3": "无论哪种方式,项目和设备都保持原样。",
+    "contact": "联系我们",
+    "mailSubject": "Autmzr Cmd — 延长试用 / 付费方案",
+    "mailBody": "你好!我的 cmd.autmzr.com 试用期刚刚结束 ({email})。希望继续使用托管版本 — 请告诉我下一步怎么做。\n\n谢谢!",
+    "back": "回到首页",
+    "signOut": "退出",
+    "selfHostHint": "想自托管? <link>github.com/AUTMZR/cmd</link>"
+  },
   "models": {
     "haiku": { "hint": "简单修改、模板代码、CRUD", "tag": "快速" },
     "sonnet": { "hint": "适合 80% 的任务 — 默认", "tag": "平衡" },

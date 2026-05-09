@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { getAuthUser } from '@/lib/auth';
+import { requireActiveAccess } from '@/lib/access';
 import { queryOne } from '@/lib/db';
 import { hub } from '@/lib/ws-hub';
 import { v4 as uuidv4 } from 'uuid';
@@ -8,6 +9,8 @@ import type { ExecRequest } from '@autmzr/command-protocol';
 export async function POST(req: NextRequest) {
   const user = await getAuthUser();
   if (!user) return new Response('Unauthorized', { status: 401 });
+  const blocked = requireActiveAccess(user);
+  if (blocked) return blocked;
 
   const { projectId, command } = await req.json();
   if (!command) return new Response('command required', { status: 400 });

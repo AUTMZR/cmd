@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth';
+import { requireActiveAccess } from '@/lib/access';
 import { queryOne } from '@/lib/db';
 import { hub } from '@/lib/ws-hub';
 import { v4 as uuidv4 } from 'uuid';
@@ -8,6 +9,8 @@ import type { FsListRequest, FsListReply } from '@autmzr/command-protocol';
 export async function GET(req: NextRequest) {
   const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const blocked = requireActiveAccess(user);
+  if (blocked) return blocked;
 
   const projectId = req.nextUrl.searchParams.get('projectId');
   const sub = req.nextUrl.searchParams.get('path') || '';

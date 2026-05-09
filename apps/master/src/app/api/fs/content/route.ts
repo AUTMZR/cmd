@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth';
+import { requireActiveAccess } from '@/lib/access';
 import { queryOne } from '@/lib/db';
 import { hub } from '@/lib/ws-hub';
 import { v4 as uuidv4 } from 'uuid';
@@ -30,6 +31,8 @@ async function safeBody(req: NextRequest): Promise<any> {
 export async function GET(req: NextRequest) {
   const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const blocked = requireActiveAccess(user);
+  if (blocked) return blocked;
   const r = await resolveProject(req, user.id);
   if ('err' in r) return NextResponse.json({ error: r.err }, { status: r.status });
   const fsReq: FsReadRequest = { type: 'fs.read', id: uuidv4(), path: r.abs };
@@ -45,6 +48,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const blocked = requireActiveAccess(user);
+  if (blocked) return blocked;
   const body = await req.json();
   const r = await resolveProject(req, user.id);
   if ('err' in r) return NextResponse.json({ error: r.err }, { status: r.status });
@@ -66,6 +71,8 @@ export async function PUT(req: NextRequest) { return POST(req); }
 export async function DELETE(req: NextRequest) {
   const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const blocked = requireActiveAccess(user);
+  if (blocked) return blocked;
   const r = await resolveProject(req, user.id);
   if ('err' in r) return NextResponse.json({ error: r.err }, { status: r.status });
   const fsReq: FsDeleteRequest = { type: 'fs.delete', id: uuidv4(), path: r.abs, recursive: true };

@@ -36,7 +36,13 @@ export default function ClientBoot() {
       if (m && !headers.has('X-CSRF-Token')) {
         headers.set('X-CSRF-Token', decodeURIComponent(m[1]));
       }
-      return orig(input, { ...init, headers, credentials: init.credentials || 'same-origin' });
+      const res = await orig(input, { ...init, headers, credentials: init.credentials || 'same-origin' });
+      // Trial-expired gate. На work-эндпоинтах сервер отдаёт 402 с upgradeUrl.
+      // Уводим юзера на /upgrade, не дав запросу провалиться в UI ошибкой.
+      if (res.status === 402 && !window.location.pathname.startsWith('/upgrade')) {
+        window.location.href = '/upgrade';
+      }
+      return res;
     };
 
     // На старте подтягиваем cookie если её ещё нет (первый запуск устройства).

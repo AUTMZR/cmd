@@ -804,6 +804,21 @@
       "hideDetails": "▾ Hide details"
     }
   },
+  "upgrade": {
+    "title": "Trial expired",
+    "expiredAgo": "Your 14-day trial ended {days} day(s) ago.",
+    "expiredJust": "Your 14-day trial just ended.",
+    "intro": "To keep using Autmzr Cmd hosted at cmd.autmzr.com:",
+    "option1": "Email us — we'll set up a paid plan for you (Stripe self-serve coming in v0.4).",
+    "option2": "Or self-host Autmzr on your own server — AGPL-3.0, no time limits.",
+    "option3": "Either way, your projects and devices stay where they are.",
+    "contact": "Email us",
+    "mailSubject": "Autmzr Cmd — extend trial / paid plan",
+    "mailBody": "Hi! My trial on cmd.autmzr.com just ended ({email}). I'd like to keep using the hosted version — please send me the next steps.\n\nThanks!",
+    "back": "Back to landing",
+    "signOut": "Sign out",
+    "selfHostHint": "Prefer to host yourself? <link>github.com/AUTMZR/cmd</link>"
+  },
   "models": {
     "haiku": { "hint": "Simple edits, boilerplate, CRUD", "tag": "fast" },
     "sonnet": { "hint": "Fits 80% of tasks — default", "tag": "balanced" },
