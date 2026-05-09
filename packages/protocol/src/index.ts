@@ -75,6 +75,13 @@ export interface HelloAckMessage extends Envelope {
   type: 'hello.ack';
   server_time: string;
   protocol: number;
+  /** Текущая версия агентского бандла на мастере. Если != своей —
+   *  агент скачивает agent_bundle_url, перезаписывает agent.js и exit(0)
+   *  (systemd/launchd рестартует с новой версией). */
+  agent_latest_version?: string;
+  /** Абсолютный URL до agent.js (например https://cmd.autmzr.com/agent.js).
+   *  Не задан для self-host без публичного URL — агент тогда не апдейтится. */
+  agent_bundle_url?: string;
 }
 
 export interface ErrorMessage extends Envelope {

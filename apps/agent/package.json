@@ -1,6 +1,6 @@
 {
   "name": "@autmzr/command-agent",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "main": "dist/agent.js",
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "tsx src/index.ts",
-    "build": "tsup",
+    "build": "tsup && node ./scripts/copy-bundle.mjs",
     "test": "tsx --test test/codex.test.ts",
     "start": "node dist/agent.js"
   },

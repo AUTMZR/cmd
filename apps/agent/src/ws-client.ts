@@ -12,6 +12,7 @@ import { handleClaude } from './handlers/claude.js';
 import { handleStatus, probeClaude, probeGemini, probeCodex } from './handlers/status.js';
 import { handlePtyOpen, handlePtyData, handlePtyResize, handlePtyClose, killAllPty } from './handlers/pty.js';
 import { jobList, jobRead, jobDelete, jobCleanup } from './job-buffer.js';
+import { maybeSelfUpdate } from './self-update.js';
 import type { AgentConfig } from './config.js';
 
 const AGENT_VERSION = readAgentVersion();
@@ -120,7 +121,17 @@ function buildUrl(cfg: AgentConfig): string {
 
 async function handle(ws: WebSocket, msg: AnyMessage): Promise<void> {
   switch (msg.type) {
-    case 'hello.ack': log('hello ack'); return;
+    case 'hello.ack': {
+      log('hello ack');
+      const ack = msg as import('@autmzr/command-protocol').HelloAckMessage;
+      void maybeSelfUpdate({
+        currentVersion: AGENT_VERSION,
+        latestVersion: ack.agent_latest_version,
+        bundleUrl: ack.agent_bundle_url,
+        log,
+      });
+      return;
+    }
     case 'ping': send(ws, { type: 'pong' }); return;
     case 'pong': return;
 

@@ -17,6 +17,19 @@ import { hashToken } from '../src/lib/crypto';
 import { processClaudeMessage, finalizeJob } from '../src/lib/job-tracker';
 import { log } from '../src/lib/log';
 import { v4 as uuidv4 } from 'uuid';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+/** Текущая версия agent-бандла, который раздаёт мастер.
+ *  Читаем agent-version.json из public/ — генерится при `npm run build -w apps/agent`.
+ *  Если файла нет (dev на чистом checkout) — пропускаем auto-update. */
+const AGENT_LATEST_VERSION: string | null = (() => {
+  try {
+    const root = process.cwd();
+    const path = join(root, 'public', 'agent-version.json');
+    return JSON.parse(readFileSync(path, 'utf8')).version || null;
+  } catch { return null; }
+})();
 
 const dev = process.env.NODE_ENV !== 'production';
 const port = Number(process.env.PORT || 3100);
@@ -162,7 +175,17 @@ function onAgentConnect(ws: WebSocket, device: { id: string; user_id: string; na
           device.id,
         ],
       ).catch(() => {});
-      ws.send(JSON.stringify({ type: 'hello.ack', server_time: new Date().toISOString(), protocol: PROTOCOL_VERSION }));
+      const publicUrl = process.env.PUBLIC_URL || '';
+      const bundleUrl = (publicUrl && AGENT_LATEST_VERSION)
+        ? `${publicUrl.replace(/\/$/, '')}/agent.js`
+        : undefined;
+      ws.send(JSON.stringify({
+        type: 'hello.ack',
+        server_time: new Date().toISOString(),
+        protocol: PROTOCOL_VERSION,
+        agent_latest_version: AGENT_LATEST_VERSION ?? undefined,
+        agent_bundle_url: bundleUrl,
+      }));
       return;
     }
     if (msg.type === 'ping') { ws.send(JSON.stringify({ type: 'pong' })); return; }
