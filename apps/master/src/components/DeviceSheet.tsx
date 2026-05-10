@@ -11,6 +11,7 @@ import type { Provider } from '@/lib/models';
 const ClaudeInstallModal = dynamic(() => import('./ClaudeInstallModal'), { ssr: false, loading: () => null });
 const ClaudeLoginModal = dynamic(() => import('./ClaudeLoginModal'), { ssr: false, loading: () => null });
 const GeminiSetupModal = dynamic(() => import('./GeminiSetupModal'), { ssr: false, loading: () => null });
+const CodexSetupModal = dynamic(() => import('./CodexSetupModal'), { ssr: false, loading: () => null });
 
 export interface DeviceSheetDevice {
   id: string; name: string; kind: string; hostname: string | null;
@@ -65,6 +66,7 @@ export default function DeviceSheet({
   const [installClaude, setInstallClaude] = useState(false);
   const [loginClaude, setLoginClaude] = useState(false);
   const [setupGemini, setSetupGemini] = useState(false);
+  const [setupCodex, setSetupCodex] = useState(false);
 
   const role = effectiveIntent(device);
   const isClaudeRole = role === 'claude';
@@ -107,6 +109,7 @@ export default function DeviceSheet({
   const claudeLoggedIn = device.agent_logged_in === true;
   const geminiInstalled = device.gemini_installed === true;
   const geminiLoggedIn = device.gemini_logged_in === true;
+  const codexInstalled = device.codex_installed === true;
   const codexLoggedIn = device.codex_logged_in === true;
 
   return (
@@ -221,6 +224,28 @@ export default function DeviceSheet({
                   </span>
                 </div>
               )}
+
+              {/* Codex row */}
+              <div className="flex items-center gap-3 py-2.5">
+                <span style={{ fontSize: 18 }}>⌘</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13.5px] font-medium">Codex CLI</div>
+                  <div className="text-[11.5px] font-mono" style={{ color: 'var(--muted)' }}>
+                    {codexInstalled && codexLoggedIn && <span style={{ color: 'var(--ok)' }}>✓ v{device.codex_version} · {t('codexReady')}</span>}
+                    {codexInstalled && !codexLoggedIn && <span style={{ color: 'var(--warn)' }}>⚠ v{device.codex_version} · {t('codexNoApiKey')}</span>}
+                    {!codexInstalled && <span style={{ color: 'var(--muted)' }}>{t('codexNotInstalled')}</span>}
+                  </div>
+                </div>
+                <button onClick={() => setSetupCodex(true)}
+                  className="text-[11.5px] px-3 py-1 rounded-full shrink-0"
+                  style={{
+                    background: codexInstalled && codexLoggedIn ? 'var(--surface-2)' : 'var(--accent)',
+                    color: codexInstalled && codexLoggedIn ? 'var(--fg)' : 'var(--bg)',
+                    border: codexInstalled && codexLoggedIn ? '1px solid var(--border)' : 'none',
+                  }}>
+                  {codexInstalled && codexLoggedIn ? t('updateKey') : codexInstalled ? `🔑 ${t('setup')}` : `📥 ${t('install')}`}
+                </button>
+              </div>
 
               {/* Default-agent селектор */}
               {(claudeLoggedIn || geminiLoggedIn || codexLoggedIn || (device.plugin_providers && device.plugin_providers.length > 0)) && (
@@ -392,6 +417,15 @@ export default function DeviceSheet({
           alreadyInstalled={geminiInstalled}
           alreadyLoggedIn={geminiLoggedIn}
           onClose={() => { setSetupGemini(false); onReload(); }}
+        />
+      )}
+      {setupCodex && (
+        <CodexSetupModal
+          deviceId={device.id}
+          deviceName={device.name}
+          alreadyInstalled={codexInstalled}
+          alreadyLoggedIn={codexLoggedIn}
+          onClose={() => { setSetupCodex(false); onReload(); }}
         />
       )}
     </div>
