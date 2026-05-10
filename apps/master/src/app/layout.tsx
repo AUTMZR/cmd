@@ -4,9 +4,34 @@ import { getLocale, getMessages } from 'next-intl/server';
 import './globals.css';
 import ClientBoot from '@/components/ClientBoot';
 
+const SITE_URL = process.env.PUBLIC_URL || 'https://cmd.autmzr.com';
+const TITLE = 'Autmzr Command — drive your AI coding CLIs from your phone';
+const DESCRIPTION = 'Self-hosted, open-source mobile control panel for Claude Code, Gemini CLI, Codex (and more). One CLI subscription, every server.';
+
 export const metadata: Metadata = {
-  title: 'Autmzr Command',
-  description: 'All your VPS and CLIs in one mobile interface.',
+  metadataBase: new URL(SITE_URL),
+  title: { default: TITLE, template: '%s · Autmzr' },
+  description: DESCRIPTION,
+  applicationName: 'Autmzr Command',
+  keywords: ['Claude Code', 'Gemini CLI', 'Codex CLI', 'self-hosted', 'AGPL', 'mobile dev', 'AI coding', 'VPS', 'remote development'],
+  authors: [{ name: 'Autmzr', url: 'https://autmzr.com' }],
+  creator: 'Autmzr',
+  publisher: 'Autmzr',
+  alternates: { canonical: '/' },
+  robots: { index: true, follow: true },
+  icons: { icon: '/icon.svg', apple: '/icon-192.png' },
+  openGraph: {
+    type: 'website', url: SITE_URL,
+    title: TITLE, description: DESCRIPTION,
+    siteName: 'Autmzr Command',
+    locale: 'en_US',
+    images: [{ url: '/og', width: 1200, height: 630, alt: 'Autmzr Command — mobile control panel for AI coding CLIs' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE, description: DESCRIPTION,
+    images: ['/og'],
+  },
 };
 export const viewport: Viewport = {
   width: 'device-width', initialScale: 1, maximumScale: 1, userScalable: false,
