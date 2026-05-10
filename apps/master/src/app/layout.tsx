@@ -41,12 +41,21 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
   const messages = await getMessages();
+  // Аналитика подключается только если задан PLAUSIBLE_DOMAIN в env.
+  // Дефолт — без аналитики (self-host friendly + GDPR friendly).
+  // Plausible: cookie-less, без consent-баннера. ANALYTICS_SCRIPT_URL
+  // позволяет указать кастомный домен (proxy через свой домен от adblock).
+  const plausibleDomain = process.env.PLAUSIBLE_DOMAIN || null;
+  const plausibleScriptUrl = process.env.PLAUSIBLE_SCRIPT_URL || 'https://plausible.io/js/script.js';
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{
           __html: `(function(){var t=localStorage.getItem('pc_theme')||'soft';document.documentElement.setAttribute('data-theme',t)})()`
         }} />
+        {plausibleDomain && (
+          <script defer data-domain={plausibleDomain} src={plausibleScriptUrl} />
+        )}
       </head>
       <body className="h-dvh overflow-hidden">
         <NextIntlClientProvider locale={locale} messages={messages}>
