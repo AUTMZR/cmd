@@ -1426,7 +1426,8 @@ export default function AppShell({ user }: { user: User }) {
       {showAddDevice && <DeviceAddModal onClose={() => { setShowAddDevice(false); loadDevices(); }} />}
       {showAddProject && <ProjectCreateModal devices={devices}
         onClose={() => setShowAddProject(false)}
-        onCreated={(id) => { setShowAddProject(false); setActiveProjectId(id); loadProjects(); setMobileTab('home'); }} />}
+        onCreated={(id) => { setShowAddProject(false); setActiveProjectId(id); loadProjects(); setMobileTab('home'); }}
+        onRequestAddDevice={() => { setShowAddProject(false); setShowAddDevice(true); }} />}
       {showSettings && <Settings user={user} theme={theme}
         onThemeChange={setThemeAnd}
         onClose={() => setShowSettings(false)} />}

@@ -1,6 +1,6 @@
 'use client';
 
-import { Terminal, Github, Send } from 'lucide-react';
+import { Terminal, Github } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 export default function Footer() {
@@ -50,17 +50,11 @@ export default function Footer() {
               <FooterLink href="https://github.com/AUTMZR/cmd/releases" external>
                 {t('links.changelog')}
               </FooterLink>
-              <FooterLink href="https://t.me/autmzr" external>
-                <span className="inline-flex items-center gap-1.5">
-                  <Send size={12} />
-                  {t('links.telegram')}
-                </span>
-              </FooterLink>
             </FooterCol>
             <FooterCol title={t('columns.legal')}>
               <FooterLink href="/privacy">{t('links.privacy')}</FooterLink>
               <FooterLink href="/terms">{t('links.terms')}</FooterLink>
-              <FooterLink href="mailto:hello@autmzr.com">{t('links.contact')}</FooterLink>
+              <FooterLink href="mailto:fdrvaa@gmail.com">{t('links.contact')}</FooterLink>
             </FooterCol>
           </div>
         </div>

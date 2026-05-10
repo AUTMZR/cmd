@@ -50,8 +50,8 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong style={{ color: 'var(--fg)' }}>GDPR / data requests:</strong> email <a
-              href="mailto:hello@autmzr.com" className="underline" style={{ color: 'var(--vibrant)' }}
-            >hello@autmzr.com</a> and we&apos;ll export or delete your data within 30 days.
+              href="mailto:fdrvaa@gmail.com" className="underline" style={{ color: 'var(--vibrant)' }}
+            >fdrvaa@gmail.com</a> and we&apos;ll export or delete your data within 30 days.
           </li>
           <li>
             <strong style={{ color: 'var(--fg)' }}>Self-host:</strong> none of the above applies. Your data lives in
@@ -61,8 +61,8 @@ export default function PrivacyPage() {
 
         <p className="mt-8 text-[13px] leading-[1.65]" style={{ color: 'var(--muted)' }}>
           Questions? Email <a
-            href="mailto:hello@autmzr.com" className="underline" style={{ color: 'var(--vibrant)' }}
-          >hello@autmzr.com</a>.
+            href="mailto:fdrvaa@gmail.com" className="underline" style={{ color: 'var(--vibrant)' }}
+          >fdrvaa@gmail.com</a>.
         </p>
       </main>
     </div>

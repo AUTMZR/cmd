@@ -51,13 +51,21 @@ export async function PUT(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const { name = 'new device', kind = 'server', intent = 'auto' } = await req.json();
+  const { name = 'new device', kind = 'server', intent = 'auto', preferred_agent = null } = await req.json();
   const token = randomToken(32);
   const role = parseIntent(intent);
+  // Тот же permissive-валидатор, что в PUT — built-ins или sane plugin id.
+  const validPreferred = (() => {
+    if (!preferred_agent) return null;
+    const builtins = ['claude-code', 'gemini-cli', 'codex-cli'];
+    if (builtins.includes(preferred_agent)) return preferred_agent;
+    if (/^[a-z0-9][a-z0-9_-]{0,63}$/i.test(preferred_agent)) return preferred_agent;
+    return null;
+  })();
   const rows = await query<{ id: string }>(
-    `INSERT INTO pc.devices (user_id, name, kind, token_hash, intent)
-     VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-    [user.id, String(name).trim(), String(kind), hashToken(token), role],
+    `INSERT INTO pc.devices (user_id, name, kind, token_hash, intent, preferred_agent)
+     VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+    [user.id, String(name).trim(), String(kind), hashToken(token), role, validPreferred],
   );
   const masterWs = (process.env.PUBLIC_URL || '').replace(/^http/, 'ws') || 'ws://localhost:3100';
   return NextResponse.json({

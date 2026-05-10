@@ -18,6 +18,9 @@ interface Props {
   devices: Device[];
   onClose: () => void;
   onCreated: (id: string) => void;
+  /** Открыть DeviceAddModal — родитель решает как именно
+   *  (закрыть текущую модалку и поднять Add Device). */
+  onRequestAddDevice?: () => void;
 }
 
 /**
@@ -41,7 +44,7 @@ interface GhRepo {
   language: string | null;
 }
 
-export default function ProjectCreateModal({ devices, onClose, onCreated }: Props) {
+export default function ProjectCreateModal({ devices, onClose, onCreated, onRequestAddDevice }: Props) {
   const t = useTranslations('project');
   const tm = useTranslations('models');
   const modelKey = (id: string) => id.replace(/[.-]/g, '_');
@@ -285,11 +288,20 @@ export default function ProjectCreateModal({ devices, onClose, onCreated }: Prop
           {step === 'device' && (
             <>
               {devices.length === 0 ? (
-                <div className="text-sm px-4 py-8 text-center rounded-xl"
-                  style={{ background: 'var(--accent-light)', color: 'var(--muted)' }}>
-                  <div className="text-2xl mb-2">📱</div>
-                  <div className="font-medium mb-1">{t('noDevices')}</div>
-                  <div className="text-xs">{t('noDevicesHint')}</div>
+                <div className="px-4 py-7 text-center rounded-xl flex flex-col items-center gap-3"
+                  style={{ background: 'var(--accent-light)' }}>
+                  <div className="text-2xl">📱</div>
+                  <div>
+                    <div className="text-sm font-medium" style={{ color: 'var(--fg)' }}>{t('noDevices')}</div>
+                    <div className="text-xs mt-1" style={{ color: 'var(--muted)' }}>{t('noDevicesHint')}</div>
+                  </div>
+                  {onRequestAddDevice && (
+                    <button type="button" onClick={onRequestAddDevice}
+                      className="mt-1 px-4 py-2 rounded-lg text-[13px] font-semibold flex items-center gap-2"
+                      style={{ background: 'var(--accent)', color: 'var(--bg)', minHeight: 40 }}>
+                      + {t('addDeviceCta')}
+                    </button>
+                  )}
                 </div>
               ) : (
                 <>

@@ -56,8 +56,8 @@ export default function TermsPage() {
 
         <p className="mt-8 text-[13px] leading-[1.65]" style={{ color: 'var(--muted)' }}>
           Questions? Email <a
-            href="mailto:hello@autmzr.com" className="underline" style={{ color: 'var(--vibrant)' }}
-          >hello@autmzr.com</a>.
+            href="mailto:fdrvaa@gmail.com" className="underline" style={{ color: 'var(--vibrant)' }}
+          >fdrvaa@gmail.com</a>.
         </p>
       </main>
     </div>

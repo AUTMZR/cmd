@@ -65,7 +65,7 @@ export default function UpgradePage() {
           </ul>
         </div>
 
-        <a href={`mailto:hello@autmzr.com?subject=${encodeURIComponent(t('mailSubject'))}&body=${encodeURIComponent(t('mailBody', { email: me?.email || '' }))}`}
+        <a href={`mailto:fdrvaa@gmail.com?subject=${encodeURIComponent(t('mailSubject'))}&body=${encodeURIComponent(t('mailBody', { email: me?.email || '' }))}`}
           className="block w-full px-4 py-3 rounded-lg text-[14px] font-semibold mb-2"
           style={{ background: 'var(--accent)', color: 'var(--bg)' }}>
           {t('contact')}

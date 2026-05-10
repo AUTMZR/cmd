@@ -17,12 +17,16 @@ interface Props { onClose: () => void }
 type Intent = 'claude' | 'fs-only';
 type Method = 'command' | 'ssh';
 type AuthType = 'password' | 'key';
+type AgentChoice = 'claude-code' | 'gemini-cli' | 'codex-cli';
 
 export default function DeviceAddModal({ onClose }: Props) {
   const t = useTranslations('device.add');
   // Общие поля
   const [name, setName] = useState('');
   const [intent, setIntent] = useState<Intent>('claude');
+  /** Какой CLI ставится дефолтным при подключении этого устройства.
+   *  Используется только когда intent === 'claude'. */
+  const [preferredAgent, setPreferredAgent] = useState<AgentChoice>('claude-code');
   const [method, setMethod] = useState<Method>('command');
   const [step, setStep] = useState<'form' | 'waiting' | 'ssh-running'>('form');
   const [cmd, setCmd] = useState<{ connect_cmd: string; id: string; token: string } | null>(null);
@@ -48,7 +52,10 @@ export default function DeviceAddModal({ onClose }: Props) {
     if (!name.trim()) { alert(t('alertNoName')); return null; }
     const r = await fetch('/api/devices', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, intent }),
+      body: JSON.stringify({
+        name, intent,
+        preferred_agent: intent === 'claude' ? preferredAgent : null,
+      }),
     });
     if (!r.ok) { alert(t('alertCreateFailed')); return null; }
     return await r.json();
@@ -201,10 +208,33 @@ export default function DeviceAddModal({ onClose }: Props) {
                 }}>
                 <span className="text-xl leading-none mt-0.5">🤖</span>
                 <span className="flex-1">
-                  <span className="block text-[13px] font-medium">{t('intentClaudeTitle')}</span>
+                  <span className="block text-[13px] font-medium">{t('intentAgentTitle')}</span>
                   <span className="block text-[11px] mt-0.5" style={{ color: 'var(--muted)' }}>
-                    {t('intentClaudeBody')}
+                    {t('intentAgentBody')}
                   </span>
+                  {intent === 'claude' && (
+                    <span className="mt-2.5 flex flex-wrap gap-1.5">
+                      {([
+                        { id: 'claude-code', label: '🤖 Claude' },
+                        { id: 'gemini-cli',  label: '✨ Gemini' },
+                        { id: 'codex-cli',   label: '⌘ Codex' },
+                      ] as const).map((c) => {
+                        const on = preferredAgent === c.id;
+                        return (
+                          <button key={c.id} type="button"
+                            onClick={(e) => { e.stopPropagation(); setPreferredAgent(c.id); }}
+                            className="text-[11.5px] px-2.5 py-1 rounded-full"
+                            style={{
+                              background: on ? 'var(--accent)' : 'var(--surface)',
+                              color: on ? 'var(--bg)' : 'var(--fg-2)',
+                              border: `1px solid ${on ? 'var(--accent)' : 'var(--border)'}`,
+                            }}>
+                            {c.label}
+                          </button>
+                        );
+                      })}
+                    </span>
+                  )}
                 </span>
               </button>
               <button type="button" onClick={() => setIntent('fs-only')}
