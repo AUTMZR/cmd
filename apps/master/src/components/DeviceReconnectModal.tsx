@@ -21,13 +21,13 @@ interface Props {
   onConnected?: () => void;
 }
 
-type Method = 'command' | 'ssh';
+type Method = 'ssh' | 'command';
 type AuthType = 'password' | 'key';
 
 export default function DeviceReconnectModal({ deviceId, deviceName, onClose, onConnected }: Props) {
   const t = useTranslations('device.reconnect');
   const td = useTranslations('device.add');
-  const [method, setMethod] = useState<Method>('command');
+  const [method, setMethod] = useState<Method>('ssh');
   const [cmd, setCmd] = useState<{ connect_cmd: string; token: string } | null>(null);
   const [qrSvg, setQrSvg] = useState('');
   const [copied, setCopied] = useState(false);
@@ -178,26 +178,12 @@ export default function DeviceReconnectModal({ deviceId, deviceName, onClose, on
 
         {cmd && !online && (
           <>
-            {/* Method tabs — те же что в Add Device */}
-            <div className="flex rounded-lg overflow-hidden mb-3" style={{ border: '1px solid var(--border)' }}>
-              <button type="button" onClick={() => setMethod('command')}
-                className="flex-1 py-2 text-[12.5px] font-medium"
-                style={{
-                  background: method === 'command' ? 'var(--accent)' : 'transparent',
-                  color: method === 'command' ? 'var(--bg)' : 'var(--fg-2)',
-                }}>
-                📋 {td('methodCommand')}
-              </button>
-              <button type="button" onClick={() => setMethod('ssh')}
-                className="flex-1 py-2 text-[12.5px] font-medium"
-                style={{
-                  background: method === 'ssh' ? 'var(--accent)' : 'transparent',
-                  color: method === 'ssh' ? 'var(--bg)' : 'var(--fg-2)',
-                  borderLeft: '1px solid var(--border)',
-                }}>
-                🔐 {td('methodSsh')}
-              </button>
-            </div>
+            {/* Primary action: SSH form. Secondary: tiny link to manual command. */}
+            {method === 'ssh' && (
+              <p className="text-[12.5px] mb-3" style={{ color: 'var(--muted)' }}>
+                {t('sshLead')}
+              </p>
+            )}
 
             {method === 'command' && (
               <>
@@ -234,6 +220,12 @@ export default function DeviceReconnectModal({ deviceId, deviceName, onClose, on
                   <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--warn)' }} />
                   {td('waitingAgent')}
                 </div>
+
+                <button type="button" onClick={() => setMethod('ssh')}
+                  className="mt-3 w-full text-[12.5px] underline underline-offset-2"
+                  style={{ color: 'var(--muted)' }}>
+                  {t('switchToSsh')}
+                </button>
               </>
             )}
 
@@ -306,6 +298,12 @@ export default function DeviceReconnectModal({ deviceId, deviceName, onClose, on
                     {sshLog || td('connecting')}
                   </pre>
                 )}
+
+                <button type="button" onClick={() => setMethod('command')}
+                  className="mt-2 w-full text-[12.5px] underline underline-offset-2"
+                  style={{ color: 'var(--muted)' }}>
+                  {t('switchToCommand')}
+                </button>
               </div>
             )}
           </>

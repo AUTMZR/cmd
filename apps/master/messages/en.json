@@ -672,6 +672,9 @@
       "title": "Re-attach agent",
       "issuing": "Generating a fresh connect command…",
       "intro": "Run this on the device. We'll issue a new one-time token — any prior token for this device becomes invalid.",
+      "sshLead": "Enter your server's SSH credentials — we'll connect and reinstall the agent right from here.",
+      "switchToCommand": "Prefer to paste a command yourself? Show it",
+      "switchToSsh": "← Back to SSH install",
       "connected": "Agent connected!",
       "done": "Done"
     },
