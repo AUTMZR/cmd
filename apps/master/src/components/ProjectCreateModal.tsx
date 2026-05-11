@@ -1,11 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { ArrowLeft, X, FolderOpen, FolderPlus, Loader2, ChevronRight, Github, Lock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import DeviceBrowser from './DeviceBrowser';
 import { effectiveIntent, type DeviceIntent } from '@/lib/device-intent';
 import { MODELS, DEFAULT_MODEL, normalizeProvider, type Provider } from '@/lib/models';
+
+const DeviceAddModal = dynamic(() => import('./DeviceAddModal'), { ssr: false, loading: () => null });
 
 interface Device {
   id: string; name: string; kind: string; online: boolean;
@@ -18,9 +21,9 @@ interface Props {
   devices: Device[];
   onClose: () => void;
   onCreated: (id: string) => void;
-  /** Открыть DeviceAddModal — родитель решает как именно
-   *  (закрыть текущую модалку и поднять Add Device). */
-  onRequestAddDevice?: () => void;
+  /** Перезагрузить список устройств у родителя — вызывается после того,
+   *  как новое устройство подключилось через встроенный DeviceAddModal. */
+  onDevicesReload?: () => void;
 }
 
 /**
@@ -44,7 +47,7 @@ interface GhRepo {
   language: string | null;
 }
 
-export default function ProjectCreateModal({ devices, onClose, onCreated, onRequestAddDevice }: Props) {
+export default function ProjectCreateModal({ devices, onClose, onCreated, onDevicesReload }: Props) {
   const t = useTranslations('project');
   const tm = useTranslations('models');
   const modelKey = (id: string) => id.replace(/[.-]/g, '_');
@@ -65,6 +68,11 @@ export default function ProjectCreateModal({ devices, onClose, onCreated, onRequ
   const [cloneLog, setCloneLog] = useState('');
   const [cloneError, setCloneError] = useState<string | null>(null);
   const [cloneDonePath, setCloneDonePath] = useState<string | null>(null);
+  // Поверх project-wizard'а можем поднять DeviceAddModal — позволяет добавить
+  // устройство, не покидая контекст создания проекта. После подключения агента
+  // вызываем onDevicesReload(), родитель апдейтит devices-prop, список здесь
+  // тут же показывает новое устройство.
+  const [showAddDevice, setShowAddDevice] = useState(false);
 
   const selectedDevice = devices.find(d => d.id === deviceId);
   const needsClaudeDevice = !!selectedDevice && effectiveIntent(selectedDevice) === 'fs-only';
@@ -251,6 +259,7 @@ export default function ProjectCreateModal({ devices, onClose, onCreated, onRequ
   ].filter(Boolean).join(' · ');
 
   return (
+    <>
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(6px)' }}
       onClick={onClose}
@@ -295,13 +304,11 @@ export default function ProjectCreateModal({ devices, onClose, onCreated, onRequ
                     <div className="text-sm font-medium" style={{ color: 'var(--fg)' }}>{t('noDevices')}</div>
                     <div className="text-xs mt-1" style={{ color: 'var(--muted)' }}>{t('noDevicesHint')}</div>
                   </div>
-                  {onRequestAddDevice && (
-                    <button type="button" onClick={onRequestAddDevice}
-                      className="mt-1 px-4 py-2 rounded-lg text-[13px] font-semibold flex items-center gap-2"
-                      style={{ background: 'var(--accent)', color: 'var(--bg)', minHeight: 40 }}>
-                      + {t('addDeviceCta')}
-                    </button>
-                  )}
+                  <button type="button" onClick={() => setShowAddDevice(true)}
+                    className="mt-1 px-4 py-2 rounded-lg text-[13px] font-semibold flex items-center gap-2"
+                    style={{ background: 'var(--accent)', color: 'var(--bg)', minHeight: 40 }}>
+                    + {t('addDeviceCta')}
+                  </button>
                 </div>
               ) : (
                 <>
@@ -613,5 +620,13 @@ export default function ProjectCreateModal({ devices, onClose, onCreated, onRequ
         </div>
       </div>
     </div>
+    {showAddDevice && (
+      <DeviceAddModal onClose={() => {
+        setShowAddDevice(false);
+        // Перезапрашиваем устройства у родителя — новое могло уже подключиться.
+        onDevicesReload?.();
+      }} />
+    )}
+    </>
   );
 }
