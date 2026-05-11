@@ -12,6 +12,7 @@ const ClaudeInstallModal = dynamic(() => import('./ClaudeInstallModal'), { ssr: 
 const ClaudeLoginModal = dynamic(() => import('./ClaudeLoginModal'), { ssr: false, loading: () => null });
 const GeminiSetupModal = dynamic(() => import('./GeminiSetupModal'), { ssr: false, loading: () => null });
 const CodexSetupModal = dynamic(() => import('./CodexSetupModal'), { ssr: false, loading: () => null });
+const DeviceReconnectModal = dynamic(() => import('./DeviceReconnectModal'), { ssr: false, loading: () => null });
 
 export interface DeviceSheetDevice {
   id: string; name: string; kind: string; hostname: string | null;
@@ -67,6 +68,7 @@ export default function DeviceSheet({
   const [loginClaude, setLoginClaude] = useState(false);
   const [setupGemini, setSetupGemini] = useState(false);
   const [setupCodex, setSetupCodex] = useState(false);
+  const [reconnectOpen, setReconnectOpen] = useState(false);
 
   const role = effectiveIntent(device);
   const isClaudeRole = role === 'claude';
@@ -351,6 +353,13 @@ export default function DeviceSheet({
                 ↻ auto
               </button>
             )}
+            {!device.online && (
+              <button onClick={() => setReconnectOpen(true)}
+                className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[13px] font-semibold"
+                style={{ background: 'var(--accent)', color: 'var(--bg)' }}>
+                <Plug size={14} /> {t('reattach')}
+              </button>
+            )}
             <button onClick={deleteDevice}
               className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[13px]"
               style={{ background: 'var(--danger-bg)', color: 'var(--danger)' }}>
@@ -426,6 +435,14 @@ export default function DeviceSheet({
           alreadyInstalled={codexInstalled}
           alreadyLoggedIn={codexLoggedIn}
           onClose={() => { setSetupCodex(false); onReload(); }}
+        />
+      )}
+      {reconnectOpen && (
+        <DeviceReconnectModal
+          deviceId={device.id}
+          deviceName={device.name}
+          onClose={() => { setReconnectOpen(false); onReload(); }}
+          onConnected={onReload}
         />
       )}
     </div>

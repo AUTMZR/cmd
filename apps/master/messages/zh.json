@@ -664,8 +664,16 @@
       "makeClaude": "改为 claude",
       "autoTitle": "根据 agent_logged_in 自动检测",
       "disconnect": "断开",
+      "reattach": "重新挂载代理",
       "allSettings": "所有设置(主题、邀请码、账户)",
       "pickRoot": "选择根目录"
+    },
+    "reconnect": {
+      "title": "重新挂载代理",
+      "issuing": "正在生成新的连接命令…",
+      "intro": "在设备上运行此命令。我们会签发新的一次性令牌 — 该设备的任何旧令牌都将失效。",
+      "connected": "代理已连接!",
+      "done": "完成"
     },
     "browser": {
       "subtitle": "设备文件",

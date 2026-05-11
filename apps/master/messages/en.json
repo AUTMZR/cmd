@@ -664,8 +664,16 @@
       "makeClaude": "Make claude",
       "autoTitle": "Auto-detect by agent_logged_in",
       "disconnect": "Disconnect",
+      "reattach": "Re-attach agent",
       "allSettings": "All settings (theme, invite codes, account)",
       "pickRoot": "pick root"
+    },
+    "reconnect": {
+      "title": "Re-attach agent",
+      "issuing": "Generating a fresh connect command…",
+      "intro": "Run this on the device. We'll issue a new one-time token — any prior token for this device becomes invalid.",
+      "connected": "Agent connected!",
+      "done": "Done"
     },
     "browser": {
       "subtitle": "Device files",
