@@ -27,7 +27,7 @@ export default function DeviceAddModal({ onClose }: Props) {
   /** Какой CLI ставится дефолтным при подключении этого устройства.
    *  Используется только когда intent === 'claude'. */
   const [preferredAgent, setPreferredAgent] = useState<AgentChoice>('claude-code');
-  const [method, setMethod] = useState<Method>('command');
+  const [method, setMethod] = useState<Method>('ssh');
   const [step, setStep] = useState<'form' | 'waiting' | 'ssh-running'>('form');
   const [cmd, setCmd] = useState<{ connect_cmd: string; id: string; token: string } | null>(null);
   const [online, setOnline] = useState(false);
@@ -253,29 +253,9 @@ export default function DeviceAddModal({ onClose }: Props) {
               </button>
             </div>
 
-            {/* Method tabs */}
-            <div className="mt-4 flex rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)' }}>
-              <button type="button" onClick={() => setMethod('command')}
-                className="flex-1 py-2 text-[12.5px] font-medium"
-                style={{
-                  background: method === 'command' ? 'var(--accent)' : 'transparent',
-                  color: method === 'command' ? 'var(--bg)' : 'var(--fg-2)',
-                }}>
-                📋 {t('methodCommand')}
-              </button>
-              <button type="button" onClick={() => setMethod('ssh')}
-                className="flex-1 py-2 text-[12.5px] font-medium"
-                style={{
-                  background: method === 'ssh' ? 'var(--accent)' : 'transparent',
-                  color: method === 'ssh' ? 'var(--bg)' : 'var(--fg-2)',
-                  borderLeft: '1px solid var(--border)',
-                }}>
-                🔐 {t('methodSsh')}
-              </button>
-            </div>
-
+            {/* Primary: SSH form. Secondary: small link to manual command. */}
             {method === 'command' && (
-              <p className="text-[11.5px] mt-2" style={{ color: 'var(--muted)' }}>
+              <p className="text-[11.5px] mt-4" style={{ color: 'var(--muted)' }}>
                 {t('commandHint')}
               </p>
             )}
@@ -343,6 +323,21 @@ export default function DeviceAddModal({ onClose }: Props) {
                 {method === 'ssh' ? t('connect') : t('create')}
               </button>
             </div>
+
+            {method === 'ssh' && (
+              <button type="button" onClick={() => setMethod('command')}
+                className="mt-2 w-full text-[12.5px] underline underline-offset-2"
+                style={{ color: 'var(--muted)' }}>
+                {t('switchToCommand')}
+              </button>
+            )}
+            {method === 'command' && (
+              <button type="button" onClick={() => setMethod('ssh')}
+                className="mt-2 w-full text-[12.5px] underline underline-offset-2"
+                style={{ color: 'var(--muted)' }}>
+                {t('switchToSsh')}
+              </button>
+            )}
           </>
         )}
 

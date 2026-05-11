@@ -726,6 +726,8 @@
       "methodSsh": "SSH",
       "commandHint": "创建后会显示命令 + QR 码。复制并粘贴到设备终端。",
       "sshHint": "Autmzr 会自动 SSH 进入并安装 agent。密码/密钥仅在内存中,不写入数据库。",
+      "switchToCommand": "想自己粘贴命令吗?显示命令",
+      "switchToSsh": "← 返回 SSH 安装",
       "sshHostPlaceholder": "192.168.1.5 或 my.server",
       "authPassword": "密码",
       "authKey": "密钥",

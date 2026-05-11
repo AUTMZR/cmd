@@ -726,6 +726,8 @@
       "methodSsh": "SSH",
       "commandHint": "After creating I'll show a command + QR. Copy and paste into the device terminal.",
       "sshHint": "Autmzr will SSH in and install the agent itself. Password/key live only in memory, never written to DB.",
+      "switchToCommand": "Prefer to paste a command yourself? Show it",
+      "switchToSsh": "← Back to SSH install",
       "sshHostPlaceholder": "192.168.1.5 or my.server",
       "authPassword": "Password",
       "authKey": "Key",

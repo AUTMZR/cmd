@@ -21,7 +21,7 @@ if [[ -z "$MASTER" || -z "$TOKEN" || -z "$NAME" ]]; then
   exit 1
 fi
 
-# Новые имена (Autmzr Command). Старые — для миграции существующих установок.
+# New names (Autmzr Command). Legacy — for migrating existing installs.
 DIR="$HOME/.autmzr-command"
 LEGACY_DIR="$HOME/.pocket-claude"
 SERVICE_NAME="autmzr-command-agent"
@@ -30,21 +30,22 @@ LAUNCHD_LABEL="dev.autmzr.command-agent"
 LEGACY_LAUNCHD_LABEL="dev.pocket-claude.agent"
 
 # ---------------------------------------------------------------
-# Миграция со старого имени (pocket-claude-agent → autmzr-command-agent).
-# Делаем ДО установки нового, чтобы не было двух одновременных агентов.
+# Migrate off the legacy name (pocket-claude-agent → autmzr-command-agent).
+# Runs BEFORE installing the new agent, so we don't end up with two concurrent
+# agents fighting over the same WS connection.
 # ---------------------------------------------------------------
 migrate_legacy() {
   local OS_NAME
   OS_NAME=$(uname -s)
   if [[ "$OS_NAME" == "Linux" ]]; then
     if [[ -f "/etc/systemd/system/${LEGACY_SERVICE_NAME}.service" ]] && [[ $EUID -eq 0 ]]; then
-      echo ">> Найден старый сервис ${LEGACY_SERVICE_NAME} — мигрирую."
+      echo ">> Found legacy service ${LEGACY_SERVICE_NAME} — migrating."
       systemctl disable --now "${LEGACY_SERVICE_NAME}" 2>/dev/null || true
       rm -f "/etc/systemd/system/${LEGACY_SERVICE_NAME}.service"
       systemctl daemon-reload
     fi
     if [[ -f "$HOME/.config/systemd/user/${LEGACY_SERVICE_NAME}.service" ]]; then
-      echo ">> Найден старый user-сервис ${LEGACY_SERVICE_NAME} — мигрирую."
+      echo ">> Found legacy user service ${LEGACY_SERVICE_NAME} — migrating."
       systemctl --user disable --now "${LEGACY_SERVICE_NAME}" 2>/dev/null || true
       rm -f "$HOME/.config/systemd/user/${LEGACY_SERVICE_NAME}.service"
       systemctl --user daemon-reload 2>/dev/null || true
@@ -52,19 +53,19 @@ migrate_legacy() {
   elif [[ "$OS_NAME" == "Darwin" ]]; then
     local LEGACY_PLIST="$HOME/Library/LaunchAgents/${LEGACY_LAUNCHD_LABEL}.plist"
     if [[ -f "$LEGACY_PLIST" ]]; then
-      echo ">> Найден старый launchd ${LEGACY_LAUNCHD_LABEL} — мигрирую."
+      echo ">> Found legacy launchd ${LEGACY_LAUNCHD_LABEL} — migrating."
       launchctl unload "$LEGACY_PLIST" 2>/dev/null || true
       rm -f "$LEGACY_PLIST"
     fi
   fi
-  # Переносим конфиг (token / config.json) из ~/.pocket-claude в ~/.autmzr-command
+  # Move config (token / config.json) from ~/.pocket-claude to ~/.autmzr-command
   if [[ -d "$LEGACY_DIR" ]] && [[ ! -d "$DIR" ]]; then
-    echo ">> Переношу конфиг ${LEGACY_DIR} → ${DIR}"
+    echo ">> Moving config ${LEGACY_DIR} → ${DIR}"
     mkdir -p "$DIR"
     chmod 700 "$DIR"
     cp -a "$LEGACY_DIR/." "$DIR/" 2>/dev/null || true
   fi
-  # Чистим зависшие nohup-процессы из старого пути
+  # Kill any stray nohup processes from the legacy path
   pkill -f 'pocket-claude/agent.js' 2>/dev/null || true
 }
 migrate_legacy
@@ -105,17 +106,18 @@ EOF
 chmod 600 "$DIR/config.json"
 
 # ================================================================
-# Опционально: node-pty для полноценного PTY-терминала (vim/htop).
-# Без него агент работает, просто PTY-режим в UI покажет инструкцию.
+# Optional: node-pty for a real PTY terminal (vim/htop).
+# Without it the agent still works — the UI just shows install instructions
+# when you try to open a PTY session.
 # ================================================================
 OS=$(uname -s)
 install_node_pty() {
   if node -e "require('node-pty')" 2>/dev/null; then
-    echo "   node-pty уже установлен — ok"
+    echo "   node-pty already installed — ok"
     return 0
   fi
-  echo ">> Пробую установить node-pty (для vim/htop/интерактивных команд)..."
-  # Ставим build-tools для компиляции native addon
+  echo ">> Trying to install node-pty (needed for vim/htop/interactive commands)..."
+  # Install build-tools so the native addon can compile
   if [[ "$OS" == "Linux" ]]; then
     if command -v apt-get >/dev/null 2>&1 && [[ $EUID -eq 0 ]]; then
       apt-get install -y build-essential python3 >/dev/null 2>&1 || true
@@ -126,26 +128,26 @@ install_node_pty() {
   fi
   if [[ $EUID -eq 0 ]] || [[ "$OS" == "Darwin" ]]; then
     if npm install -g node-pty >/dev/null 2>&1; then
-      echo "   ✓ node-pty установлен глобально"
+      echo "   ✓ node-pty installed globally"
     else
-      echo "   ⚠ node-pty не установлен — PTY в UI покажет инструкцию"
-      echo "     руками: sudo npm install -g node-pty"
+      echo "   ⚠ node-pty install failed — PTY in UI will show instructions"
+      echo "     manually: sudo npm install -g node-pty"
     fi
   else
-    echo "   ⚠ не root — не могу поставить node-pty глобально"
-    echo "     руками: sudo npm install -g node-pty"
+    echo "   ⚠ not root — can't install node-pty globally"
+    echo "     manually: sudo npm install -g node-pty"
   fi
 }
 install_node_pty
 
-# Очищаем старые nohup-процессы агента (оставшиеся от предыдущих установок),
-# чтобы не было конфликта с новым systemd-юнитом.
+# Kill any stray nohup processes (leftovers from previous installs),
+# so they don't fight with the fresh systemd unit.
 pkill -f 'autmzr-command/agent.js' 2>/dev/null || true
 sleep 1
 
 # Install service
 if [[ "$OS" == "Linux" ]]; then
-  # Под root ставим system-unit с лимитами и auto-restart.
+  # As root, install a system-unit with limits and auto-restart.
   if [[ $EUID -eq 0 ]]; then
     UNIT="/etc/systemd/system/${SERVICE_NAME}.service"
     cat > "$UNIT" <<EOF
@@ -175,7 +177,7 @@ EOF
     echo "✓ systemd system service: ${SERVICE_NAME}"
     echo "  logs: journalctl -u ${SERVICE_NAME} -f"
   else
-    # Non-root — user-scope (работает пока юзер залогинен или linger включён)
+    # Non-root — user-scope (runs while the user is logged in, or with linger enabled)
     UNIT="$HOME/.config/systemd/user/${SERVICE_NAME}.service"
     mkdir -p "$(dirname "$UNIT")"
     cat > "$UNIT" <<EOF
@@ -195,7 +197,7 @@ EOF
     systemctl --user enable --now "${SERVICE_NAME}"
     echo "✓ systemd user service: ${SERVICE_NAME}"
     echo "  logs: journalctl --user -u ${SERVICE_NAME} -f"
-    echo "  (для auto-start при reboot без логина: sudo loginctl enable-linger $USER)"
+    echo "  (for auto-start after reboot without a login session: sudo loginctl enable-linger $USER)"
   fi
 elif [[ "$OS" == "Darwin" ]]; then
   PLIST="$HOME/Library/LaunchAgents/${LAUNCHD_LABEL}.plist"
@@ -251,27 +253,27 @@ echo ""
 echo "Done! Device '$NAME' is now connecting to $MASTER"
 echo "Uninstall: $DIR/uninstall.sh"
 
-# Проверка что агент реально стартовал и не упал.
-# Если не active через 5 сек — покажем последние 20 строк лога с диагностикой.
+# Verify the agent actually started and didn't immediately crash.
+# If not active after 6s — print the last 15 log lines with environment diagnostics.
 sleep 6
 echo ""
-echo ">> Проверяю что агент жив..."
+echo ">> Checking that the agent is alive..."
 is_active_sys=$(systemctl is-active "${SERVICE_NAME}" 2>/dev/null || true)
 is_active_user=$(systemctl --user is-active "${SERVICE_NAME}" 2>/dev/null || true)
-# Показываем последние 15 строк лога ВСЕГДА — чтобы видеть connected/disconnected
-# и ошибки даже если процесс мгновенно рестартает в active.
-echo "────── последние 15 строк лога агента ──────"
+# Always print the last 15 log lines — so you can see connected/disconnected
+# and errors even when the process is restarting fast enough to look "active".
+echo "────── last 15 lines of agent log ──────"
 journalctl -u "${SERVICE_NAME}" -n 15 --no-pager 2>/dev/null \
   || journalctl --user -u "${SERVICE_NAME}" -n 15 --no-pager 2>/dev/null \
-  || echo "(journalctl недоступен)"
-echo "────────────────────────────────────────────"
+  || echo "(journalctl unavailable)"
+echo "────────────────────────────────────────"
 if [[ "$is_active_sys" == "active" || "$is_active_user" == "active" ]]; then
   echo "✓ systemd unit active"
 else
-  echo "⚠ systemd unit НЕ active"
+  echo "⚠ systemd unit NOT active"
 fi
-echo "Диагностика окружения:"
-command -v node >/dev/null 2>&1 && echo "  node: $(node --version) @ $(which node)" || echo "  ❌ node НЕ НАЙДЕН"
-command -v curl >/dev/null 2>&1 && echo "  curl: $(curl --version | head -1 | cut -d ' ' -f 1-2)" || echo "  ❌ curl отсутствует"
-command -v codex >/dev/null 2>&1 && echo "  codex: $(codex --version 2>/dev/null | head -1) @ $(which codex)" || echo "  codex: не установлен (опционально)"
+echo "Environment diagnostics:"
+command -v node >/dev/null 2>&1 && echo "  node: $(node --version) @ $(which node)" || echo "  ❌ node NOT FOUND"
+command -v curl >/dev/null 2>&1 && echo "  curl: $(curl --version | head -1 | cut -d ' ' -f 1-2)" || echo "  ❌ curl missing"
+command -v codex >/dev/null 2>&1 && echo "  codex: $(codex --version 2>/dev/null | head -1) @ $(which codex)" || echo "  codex: not installed (optional)"
 echo "  master URL: $MASTER"
