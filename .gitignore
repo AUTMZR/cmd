@@ -39,7 +39,11 @@ jobs/
 
 # Master: собранный в /public агент для install
 apps/master/public/agent.js
+apps/master/public/agent.js.sig
 apps/master/public/agent-v*.js
+
+# Agent signing key (Ed25519) — приватник для подписи agent.js
+secrets/
 
 # Agent distrib
 apps/agent/dist/

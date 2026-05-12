@@ -106,7 +106,7 @@ export default function DeviceReconnectModal({ deviceId, deviceName, onClose, on
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           host: sshHost.trim(), port: Number(sshPort) || 22,
-          username: sshUser.trim(), auth, connectCmd: cmd.connect_cmd,
+          username: sshUser.trim(), auth, deviceId,
         }),
       });
       if (!res.ok || !res.body) {

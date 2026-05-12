@@ -2,7 +2,10 @@
 import { query } from './db';
 import { log } from './log';
 
-export type AuthEvent = 'login_ok' | 'login_fail' | 'signup' | 'logout' | 'rate_limit' | 'csrf_fail';
+export type AuthEvent =
+  | 'login_ok' | 'login_fail' | 'signup' | 'logout' | 'rate_limit' | 'csrf_fail'
+  // device-token rotation events (B-03 in REVIEW.md)
+  | 'device_token_reissued';
 
 export async function auditAuth(params: {
   event: AuthEvent;

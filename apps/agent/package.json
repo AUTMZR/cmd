@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "tsx src/index.ts",
-    "build": "tsup && node ./scripts/copy-bundle.mjs",
+    "build": "tsup && node ./scripts/copy-bundle.mjs && node ./scripts/sign-bundle.mjs",
     "test": "tsx --test test/codex.test.ts",
     "start": "node dist/agent.js"
   },

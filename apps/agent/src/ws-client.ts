@@ -101,7 +101,7 @@ export function connect(cfg: AgentConfig): void {
     try { msg = JSON.parse(raw.toString('utf8')); } catch {
       log('bad message (not json)'); return;
     }
-    handle(ws, msg).catch((e) => log(`handler error: ${e.message}`));
+    handle(ws, msg, cfg).catch((e) => log(`handler error: ${e.message}`));
   });
 
   ws.on('close', (code, reason) => {
@@ -129,7 +129,7 @@ function buildUrl(cfg: AgentConfig): string {
   return u.toString();
 }
 
-async function handle(ws: WebSocket, msg: AnyMessage): Promise<void> {
+async function handle(ws: WebSocket, msg: AnyMessage, cfg: AgentConfig): Promise<void> {
   switch (msg.type) {
     case 'hello.ack': {
       log('hello ack');
@@ -138,6 +138,7 @@ async function handle(ws: WebSocket, msg: AnyMessage): Promise<void> {
         currentVersion: AGENT_VERSION,
         latestVersion: ack.agent_latest_version,
         bundleUrl: ack.agent_bundle_url,
+        masterUrl: cfg.master_url,
         log,
       });
       return;

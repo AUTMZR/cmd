@@ -80,13 +80,32 @@ app.prepare().then(async () => {
     }
 
     if (url.pathname === '/ws/pty') {
+      // Origin check — без него /ws/pty уязвим к cross-origin shell через
+      // CSRF (cookies прикрепляются к WS-upgrade автоматически в браузере).
+      const origin = req.headers.origin || '';
+      const publicUrl = process.env.PUBLIC_URL || '';
+      const allowedOrigins = [publicUrl, 'http://localhost:3100', 'http://127.0.0.1:3100'].filter(Boolean);
+      if (!origin || !allowedOrigins.includes(origin)) {
+        log.warn('ws.pty.origin_blocked', { origin });
+        socket.write('HTTP/1.1 403 Forbidden\r\n\r\n'); socket.destroy(); return;
+      }
+
       // Авторизация по cookie pc_session (та же что у HTTP API).
       const sid = parseCookie(req.headers.cookie || '', 'pc_session');
       if (!sid) { socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n'); socket.destroy(); return; }
-      const user = await queryOne<{ user_id: string }>(
-        `SELECT user_id FROM pc.user_sessions WHERE id = $1`, [sid],
+      const user = await queryOne<{ user_id: string; is_admin: boolean; trial_until: string | null }>(
+        `SELECT u.id AS user_id, u.is_admin, u.trial_until
+         FROM pc.user_sessions s JOIN pc.users u ON u.id = s.user_id
+         WHERE s.id = $1`,
+        [sid],
       );
       if (!user) { socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n'); socket.destroy(); return; }
+
+      // Trial-gate: expired non-admin не получает PTY-доступа.
+      if (!user.is_admin && user.trial_until && new Date(user.trial_until).getTime() <= Date.now()) {
+        log.warn('ws.pty.trial_expired', { userId: user.user_id });
+        socket.write('HTTP/1.1 402 Payment Required\r\n\r\n'); socket.destroy(); return;
+      }
 
       const deviceId = url.searchParams.get('device');
       if (!deviceId) { socket.write('HTTP/1.1 400 Bad Request\r\n\r\n'); socket.destroy(); return; }

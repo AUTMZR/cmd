@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuthUser } from '@/lib/auth';
+import { getAuthUser } from "@/lib/auth";
+import { requireActiveAccess } from "@/lib/access";
 import { queryOne } from '@/lib/db';
 import { hub } from '@/lib/ws-hub';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,6 +15,8 @@ import type { ExecRequest } from '@autmzr/command-protocol';
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const blocked = requireActiveAccess(user);
+  if (blocked) return blocked;
   const { id: deviceId } = await params;
 
   const device = await queryOne<{ id: string; name: string }>(

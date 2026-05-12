@@ -100,7 +100,7 @@ export default function DeviceAddModal({ onClose }: Props) {
           auth: sshAuthType === 'password'
             ? { type: 'password', password: sshPassword }
             : { type: 'key', key: sshKey, passphrase: sshPassphrase || undefined },
-          connectCmd: j.connect_cmd,
+          deviceId: j.id,
         }),
       });
       if (!res.ok || !res.body) {

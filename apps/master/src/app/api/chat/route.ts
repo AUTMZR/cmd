@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
   if (blocked) return blocked;
 
   const { message, sessionId, projectId, model: requestedModel,
-          permissionMode = 'bypassPermissions', effort = 'medium' } = await req.json();
+          permissionMode = 'acceptEdits', effort = 'medium' } = await req.json();
   if (!message || typeof message !== 'string') return new Response('message required', { status: 400 });
 
   // Загружаем проект и устройство — включая intent/agent_logged_in для выбора режима.

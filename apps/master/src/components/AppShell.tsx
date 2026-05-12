@@ -164,7 +164,7 @@ export default function AppShell({ user }: { user: User }) {
   const [slashOpen, setSlashOpen] = useState(false);
   const [slashIdx, setSlashIdx] = useState(0);
   const [model, setModel] = useState<ModelValue>('sonnet');
-  const [permissionMode, setPermissionMode] = useState<ModeValue>('bypassPermissions');
+  const [permissionMode, setPermissionMode] = useState<ModeValue>('acceptEdits');
   const [effort, setEffort] = useState<EffortValue>('medium');
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
 

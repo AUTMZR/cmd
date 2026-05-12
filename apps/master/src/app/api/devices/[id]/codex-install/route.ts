@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
-import { getAuthUser } from '@/lib/auth';
+import { getAuthUser } from "@/lib/auth";
+import { requireActiveAccess } from "@/lib/access";
 import { queryOne, query } from '@/lib/db';
 import { hub } from '@/lib/ws-hub';
 import { v4 as uuidv4 } from 'uuid';
@@ -19,6 +20,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (csrfBlocked) return csrfBlocked;
   const user = await getAuthUser();
   if (!user) return new Response('Unauthorized', { status: 401 });
+  const blocked = requireActiveAccess(user);
+  if (blocked) return blocked;
   const limited = rateLimit(req, { key: 'codex-install', max: 1, windowMs: 30_000, perUser: user.id });
   if (limited) return limited;
   const { id: deviceId } = await params;
