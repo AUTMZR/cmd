@@ -3,10 +3,10 @@ import pkg from '../../../../package.json';
 import { query } from '@/lib/db';
 import { hub } from '@/lib/ws-hub';
 
-const startedAt = Date.now();
-
 export async function GET() {
-  const uptimeSeconds = Math.floor((Date.now() - startedAt) / 1000);
+  // process.uptime() reflects the Node.js process lifetime, unlike a
+  // module-level `startedAt` which only counts from first lazy module load.
+  const uptimeSeconds = Math.floor(process.uptime());
 
   try {
     await query('SELECT 1');
