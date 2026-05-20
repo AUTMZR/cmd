@@ -18,9 +18,15 @@ import type { AgentConfig } from './config.js';
 
 let pluginsBooted = false;
 
+declare const __AUTMZR_AGENT_VERSION__: string | undefined;
+
 const AGENT_VERSION = readAgentVersion();
 
 function readAgentVersion(): string {
+  // Baked into bundle by tsup `define` — single source of truth in production.
+  if (typeof __AUTMZR_AGENT_VERSION__ === 'string' && __AUTMZR_AGENT_VERSION__) {
+    return __AUTMZR_AGENT_VERSION__;
+  }
   try {
     const __dirname = dirname(fileURLToPath(import.meta.url));
     const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf8'));

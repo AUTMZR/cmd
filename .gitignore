@@ -54,6 +54,13 @@ HANDOFF.md
 docs/internal/
 *.private.md
 
+# Local audit / review artifacts (gsd-code-review, security audits)
+REVIEW.md
+SECURITY.md
+VERIFICATION.md
+UI-REVIEW.md
+EVAL-REVIEW.md
+
 # Build cache
 .turbo/
 coverage/
