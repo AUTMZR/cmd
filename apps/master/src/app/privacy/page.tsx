@@ -27,42 +27,136 @@ export default function PrivacyPage() {
           Privacy policy
         </h1>
 
-        <p className="mt-6 text-[14.5px] leading-[1.65]" style={{ color: 'var(--fg-2)' }}>
-          The full privacy policy will be published before public launch.
+        <p className="mt-2 text-[13px]" style={{ color: 'var(--muted)' }}>
+          Last updated: 2026-05-30
         </p>
 
-        <p className="mt-4 text-[14.5px] leading-[1.65]" style={{ color: 'var(--fg-2)' }}>
-          In the meantime, here is what Autmzr Command does with your data:
-        </p>
+        {/* Free service */}
+        <section className="mt-10">
+          <h2 className="text-[18px] font-semibold" style={{ color: 'var(--fg)' }}>
+            Free, open-source service
+          </h2>
+          <p className="mt-3 text-[14.5px] leading-[1.65]" style={{ color: 'var(--fg-2)' }}>
+            Autmzr Command is a free, open-source service. There is no paid tier. The source
+            code is available on GitHub under the AGPL-3.0 license.
+          </p>
+        </section>
 
-        <ul className="mt-4 list-disc space-y-2 pl-6 text-[14px] leading-[1.6]" style={{ color: 'var(--fg-2)' }}>
-          <li>
-            <strong style={{ color: 'var(--fg)' }}>What we collect:</strong> email (for sign-in), server connection
-            metadata (hostname, OS, agent version), and chat history you create with the agent.
-          </li>
-          <li>
-            <strong style={{ color: 'var(--fg)' }}>How we store it:</strong> your API keys and OAuth tokens are
-            encrypted at rest with libsodium sealed boxes; chat history is stored unencrypted in your tenant database.
-          </li>
-          <li>
-            <strong style={{ color: 'var(--fg)' }}>Who we share with:</strong> nobody. No analytics, no ad partners,
-            no resold tokens.
-          </li>
-          <li>
-            <strong style={{ color: 'var(--fg)' }}>GDPR / data requests:</strong> email <a
-              href="mailto:fdrvaa@gmail.com" className="underline" style={{ color: 'var(--vibrant)' }}
-            >fdrvaa@gmail.com</a> and we&apos;ll export or delete your data within 30 days.
-          </li>
-          <li>
-            <strong style={{ color: 'var(--fg)' }}>Self-host:</strong> none of the above applies. Your data lives in
-            your Postgres on your VPS. We can&apos;t see it.
-          </li>
-        </ul>
+        {/* What we collect */}
+        <section className="mt-10">
+          <h2 className="text-[18px] font-semibold" style={{ color: 'var(--fg)' }}>
+            What we collect
+          </h2>
+          <p className="mt-3 text-[14.5px] leading-[1.65]" style={{ color: 'var(--fg-2)' }}>
+            We collect the minimum information needed to operate the service:
+          </p>
+          <ul className="mt-4 list-disc space-y-2 pl-6 text-[14px] leading-[1.6]" style={{ color: 'var(--fg-2)' }}>
+            <li>
+              <strong style={{ color: 'var(--fg)' }}>Email address</strong> — used for sign-in
+              and account verification.
+            </li>
+            <li>
+              <strong style={{ color: 'var(--fg)' }}>Password hash</strong> — we store a bcrypt
+              hash of your password, not the plaintext.
+            </li>
+            <li>
+              <strong style={{ color: 'var(--fg)' }}>Login audit log</strong> — IP address,
+              user-agent, and timestamp for each sign-in attempt, used for security monitoring.
+            </li>
+            <li>
+              <strong style={{ color: 'var(--fg)' }}>Connected agent metadata</strong> — hostname,
+              OS, CPU architecture, and agent version of each device you register. This is needed
+              to display your device fleet in the UI.
+            </li>
+            <li>
+              <strong style={{ color: 'var(--fg)' }}>Chat history</strong> — messages you send
+              to the agent, stored in the service database so you can review past sessions.
+            </li>
+          </ul>
+        </section>
 
-        <p className="mt-8 text-[13px] leading-[1.65]" style={{ color: 'var(--muted)' }}>
-          Questions? Email <a
-            href="mailto:fdrvaa@gmail.com" className="underline" style={{ color: 'var(--vibrant)' }}
-          >fdrvaa@gmail.com</a>.
+        {/* What we do NOT have access to */}
+        <section className="mt-10">
+          <h2 className="text-[18px] font-semibold" style={{ color: 'var(--fg)' }}>
+            What we do not have access to
+          </h2>
+          <p className="mt-3 text-[14.5px] leading-[1.65]" style={{ color: 'var(--fg-2)' }}>
+            By design, the following data never leaves your own server:
+          </p>
+          <ul className="mt-4 list-disc space-y-2 pl-6 text-[14px] leading-[1.6]" style={{ color: 'var(--fg-2)' }}>
+            <li>
+              <strong style={{ color: 'var(--fg)' }}>Your source code</strong> — project files
+              live on your VPS and are only accessed by the agent running there.
+            </li>
+            <li>
+              <strong style={{ color: 'var(--fg)' }}>CLI auth tokens</strong> — credentials such
+              as{' '}
+              <code className="text-[13px] rounded px-1" style={{ background: 'var(--surface-2)' }}>
+                ~/.claude/
+              </code>{' '}
+              or{' '}
+              <code className="text-[13px] rounded px-1" style={{ background: 'var(--surface-2)' }}>
+                ~/.config/gemini/
+              </code>{' '}
+              stay on your VPS. The protocol blocks any attempt to read these paths.
+            </li>
+            <li>
+              <strong style={{ color: 'var(--fg)' }}>API keys</strong> — third-party API keys
+              are never transmitted to or stored by this service.
+            </li>
+          </ul>
+        </section>
+
+        {/* Who we share with */}
+        <section className="mt-10">
+          <h2 className="text-[18px] font-semibold" style={{ color: 'var(--fg)' }}>
+            Who we share data with
+          </h2>
+          <p className="mt-3 text-[14.5px] leading-[1.65]" style={{ color: 'var(--fg-2)' }}>
+            Nobody. We do not sell, rent, or share your data with third parties. There are no
+            analytics trackers, ad partners, or data brokers involved.
+          </p>
+        </section>
+
+        {/* Data deletion */}
+        <section className="mt-10">
+          <h2 className="text-[18px] font-semibold" style={{ color: 'var(--fg)' }}>
+            Data deletion and GDPR requests
+          </h2>
+          <p className="mt-3 text-[14.5px] leading-[1.65]" style={{ color: 'var(--fg-2)' }}>
+            To request export or deletion of your account data, email{' '}
+            <a
+              href="mailto:fdrvaa84@gmail.com"
+              className="underline"
+              style={{ color: 'var(--vibrant)' }}
+            >
+              fdrvaa84@gmail.com
+            </a>
+            . We will respond within 30 days.
+          </p>
+        </section>
+
+        {/* Self-host note */}
+        <section className="mt-10">
+          <h2 className="text-[18px] font-semibold" style={{ color: 'var(--fg)' }}>
+            Self-hosting
+          </h2>
+          <p className="mt-3 text-[14.5px] leading-[1.65]" style={{ color: 'var(--fg-2)' }}>
+            If you run your own Autmzr Command instance, none of the above applies — your data
+            lives entirely in your own Postgres database. We have no access to it.
+          </p>
+        </section>
+
+        <p className="mt-12 text-[13px] leading-[1.65]" style={{ color: 'var(--muted)' }}>
+          Questions? Email{' '}
+          <a
+            href="mailto:fdrvaa84@gmail.com"
+            className="underline"
+            style={{ color: 'var(--vibrant)' }}
+          >
+            fdrvaa84@gmail.com
+          </a>
+          .
         </p>
       </main>
     </div>
