@@ -129,6 +129,8 @@ export default function AppShell({ user }: { user: User }) {
     return () => clearInterval(id);
   }, [speech.listening]);
   const wasListeningRef = useRef(false);
+  const firedDeviceConnectedRef = useRef(false);
+  const firedFirstChatRef = useRef(false);
   useEffect(() => {
     if (wasListeningRef.current && !speech.listening) {
       requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -146,6 +148,13 @@ export default function AppShell({ user }: { user: User }) {
     }
     wasListeningRef.current = speech.listening;
   }, [speech.listening]);
+  useEffect(() => {
+    if (firedDeviceConnectedRef.current) return;
+    if (devices.some(d => d.online)) {
+      window.plausible?.('device_connected');
+      firedDeviceConnectedRef.current = true;
+    }
+  }, [devices]);
   // ================================================================
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -337,6 +346,10 @@ export default function AppShell({ user }: { user: User }) {
     if (!text.trim() || sending) return;
     if (await handleSlash(text)) return;
     if (!activeProjectId) { alert(t('selectProjectFirst')); return; }
+    if (!firedFirstChatRef.current && messages.length === 0) {
+      window.plausible?.('first_chat_sent');
+      firedFirstChatRef.current = true;
+    }
     setMessages((m) => [...m, { role: 'user', content: text }, { role: 'assistant', content: '' }]);
     setInput(''); setSending(true); setTools([]);
     let assistantText = ''; let newSid: string | null = null;

@@ -82,9 +82,11 @@ export default function AuthScreen({ needSetup, githubOauth, onAuth }: Props) {
     // показать "Check your inbox". Юзер уже залогинен (cookie установлена сервером),
     // поэтому resend-verification со страницы будет работать.
     if (isSignup && !needSetup && !j.user?.email_verified) {
+      window.plausible?.('signup_completed');
       window.location.href = '/verify-email';
       return;
     }
+    if (isSignup) window.plausible?.('signup_completed');
     onAuth(j.user);
   }
 
