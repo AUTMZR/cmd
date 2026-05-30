@@ -124,7 +124,7 @@ What's next:
 3. Sign in to Claude Code or Gemini CLI on that server.
 4. Start sending tasks from your phone.
 
-You have 14 days of free trial. No card needed yet.
+Free forever, no card needed.
 
 Questions? Reply to this email — it goes straight to me.
 
@@ -134,7 +134,7 @@ Questions? Reply to this email — it goes straight to me.
 <html><body style="font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;background:#0b0b0d;color:#f4f4f5;padding:32px;">
   <div style="max-width:480px;margin:0 auto;background:#131318;border:1px solid #26262e;border-radius:14px;padding:32px;">
     <h1 style="font-size:22px;font-weight:600;margin:0 0 16px;letter-spacing:-0.01em;">Welcome aboard 👋</h1>
-    <p style="color:#d4d4d8;line-height:1.55;margin:0 0 20px;">${greeting} your Autmzr Command account is verified and ready. You have 14 days of free trial — no card needed yet.</p>
+    <p style="color:#d4d4d8;line-height:1.55;margin:0 0 20px;">${greeting} your Autmzr Command account is verified and ready. Free forever, no card needed.</p>
     <h2 style="font-size:14px;font-weight:600;margin:24px 0 8px;color:#f4f4f5;">What's next</h2>
     <ol style="color:#d4d4d8;line-height:1.6;margin:0 0 24px;padding-left:20px;">
       <li>Open the app and connect your first server with one curl command.</li>
