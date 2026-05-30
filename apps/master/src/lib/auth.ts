@@ -62,30 +62,24 @@ export async function logout(): Promise<void> {
   jar.delete(SESSION_COOKIE);
 }
 
-/** TTL trial для новых публичных регистраций (см. landing pricing). */
-const TRIAL_DAYS = 14;
 /** TTL для verification token. */
 const VERIFY_TOKEN_TTL_HOURS = 24;
 
 export async function register(email: string, password: string, name?: string, isAdmin = false): Promise<User> {
   const hash = await bcrypt.hash(password, 10);
-  // Админы получают NULL trial (бесконечный доступ). Остальные — 14 дней с NOW().
-  const trialUntil = isAdmin
-    ? null
-    : new Date(Date.now() + TRIAL_DAYS * 24 * 3600 * 1000).toISOString();
-  // Админ — первый в инстансе, считаем verified автоматически. Публичные регистрации
-  // должны подтвердить email через ссылку.
+  // Free product — no trial. Column `trial_until` is kept for backward compatibility
+  // and is always NULL. Admins still skip email verification (they're set up via wizard).
   const emailVerified = isAdmin;
   const rows = await query<{ id: string }>(
     `INSERT INTO pc.users (email, password_hash, name, is_admin, trial_until, email_verified)
-     VALUES ($1, $2, $3, $4, $5, $6)
+     VALUES ($1, $2, $3, $4, NULL, $5)
      ON CONFLICT (email) DO NOTHING RETURNING id`,
-    [email, hash, name || null, isAdmin, trialUntil, emailVerified],
+    [email, hash, name || null, isAdmin, emailVerified],
   );
   if (!rows[0]) throw new Error('user_exists');
   return {
     id: rows[0].id, email, name: name || null, is_admin: isAdmin,
-    trial_until: trialUntil, email_verified: emailVerified,
+    trial_until: null, email_verified: emailVerified,
   };
 }
 
@@ -95,7 +89,7 @@ export async function register(email: string, password: string, name?: string, i
  * Залогинить юзера через GitHub. Линкование:
  *   1. Если есть user с github_id = ghId → обновляем токен/login, выдаём сессию.
  *   2. Иначе если есть user с email = ghEmail → линкуем github_id к нему.
- *   3. Иначе создаём нового юзера (14-day trial, email_verified=true т.к. GitHub
+ *   3. Иначе создаём нового юзера (no trial, email_verified=true т.к. GitHub
  *      уже верифицировал email).
  *
  * Возвращает User. Сессия выставлена в cookie.
@@ -135,21 +129,20 @@ export async function loginOrRegisterWithGithub(args: {
   // 3. Create
   if (!row) {
     if (!args.ghEmail) throw new Error('github_email_unavailable');
-    const trialUntil = new Date(Date.now() + TRIAL_DAYS * 24 * 3600 * 1000).toISOString();
     const rows = await query<{ id: string }>(
       `INSERT INTO pc.users
          (email, password_hash, name, is_admin, trial_until, email_verified,
           github_id, github_login, github_avatar_url, github_access_token)
-       VALUES ($1, NULL, $2, false, $3, true, $4, $5, $6, $7)
+       VALUES ($1, NULL, $2, false, NULL, true, $3, $4, $5, $6)
        RETURNING id`,
       [
-        args.ghEmail.toLowerCase(), args.ghName, trialUntil,
+        args.ghEmail.toLowerCase(), args.ghName,
         args.ghId, args.ghLogin, args.ghAvatarUrl, args.encryptedToken,
       ],
     );
     row = {
       id: rows[0].id, email: args.ghEmail.toLowerCase(), name: args.ghName,
-      is_admin: false, trial_until: trialUntil, email_verified: true,
+      is_admin: false, trial_until: null, email_verified: true,
     } as User & { github_id: number | null };
   } else {
     // Существующий — обновляем токен (juser мог reauthorize).
