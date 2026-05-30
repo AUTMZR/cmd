@@ -36,15 +36,19 @@ export default function PromoCard({ promos }: Props) {
       target="_blank"
       rel="noopener noreferrer"
       onClick={onClick}
-      className="block rounded-lg border border-zinc-800 bg-zinc-900/50 p-3 hover:bg-zinc-900 transition"
+      className="block rounded-lg border p-3 transition"
+      style={{
+        background: 'var(--surface-2)',
+        borderColor: 'var(--border)',
+      }}
     >
       {chosen.imageUrl && (
         <img src={chosen.imageUrl} alt="" className="w-full h-24 object-cover rounded mb-2" />
       )}
-      <div className="text-xs uppercase tracking-wide text-zinc-500 mb-1">From the maker of cmd</div>
-      <div className="text-sm font-medium text-zinc-100 mb-1">{chosen.title}</div>
-      <div className="text-xs text-zinc-400 mb-2">{chosen.description}</div>
-      <div className="text-xs text-emerald-400">{chosen.ctaLabel} →</div>
+      <div className="text-xs uppercase tracking-wide mb-1" style={{ color: 'var(--muted)' }}>From the maker of cmd</div>
+      <div className="text-sm font-medium mb-1" style={{ color: 'var(--fg)' }}>{chosen.title}</div>
+      <div className="text-xs mb-2" style={{ color: 'var(--muted)' }}>{chosen.description}</div>
+      <div className="text-xs" style={{ color: 'var(--vibrant)' }}>{chosen.ctaLabel} →</div>
     </a>
   );
 }
