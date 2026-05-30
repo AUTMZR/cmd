@@ -16,7 +16,6 @@ import { useSpeechRecognition } from '@/lib/useSpeechRecognition';
 import { useTranslations } from 'next-intl';
 import MobileTabBar, { type MobileTab } from './MobileTabBar';
 import DevicesList from './DevicesList';
-import TrialBanner from './TrialBanner';
 import EmailVerifyBanner from './EmailVerifyBanner';
 
 const FileTree = dynamic(() => import('./FileTree'), { ssr: false, loading: () => null });
@@ -597,7 +596,6 @@ export default function AppShell({ user }: { user: User }) {
   return (
     <div className="h-dvh flex flex-col" style={{ background: 'var(--bg)', color: 'var(--fg)' }}>
       <EmailVerifyBanner emailVerified={user.email_verified} />
-      <TrialBanner trialUntil={user.trial_until} isAdmin={user.is_admin} />
       <div className="flex-1 min-h-0 flex flex-col md:flex-row">
 
       {/* ============ SIDEBAR (desktop + landscape-mobile drawer) ============ */}
