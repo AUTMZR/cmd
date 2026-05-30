@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import type { PromoItem } from '@/lib/promo';
 import dynamic from 'next/dynamic';
 import {
   Plus, Settings as SettingsIcon, Menu, X, ChevronRight,
@@ -17,6 +18,7 @@ import { useTranslations } from 'next-intl';
 import MobileTabBar, { type MobileTab } from './MobileTabBar';
 import DevicesList from './DevicesList';
 import EmailVerifyBanner from './EmailVerifyBanner';
+import PromoCard from './PromoCard';
 
 const FileTree = dynamic(() => import('./FileTree'), { ssr: false, loading: () => null });
 const Terminal = dynamic(() => import('./Terminal'), { ssr: false, loading: () => null });
@@ -166,6 +168,11 @@ export default function AppShell({ user }: { user: User }) {
   const [permissionMode, setPermissionMode] = useState<ModeValue>('acceptEdits');
   const [effort, setEffort] = useState<EffortValue>('medium');
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const [promos, setPromos] = useState<PromoItem[]>([]);
+
+  useEffect(() => {
+    fetch('/api/promos').then(r => r.json()).then(j => setPromos(j.promos || [])).catch(() => {});
+  }, []);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const taRef = useRef<HTMLTextAreaElement | null>(null);
@@ -763,6 +770,12 @@ export default function AppShell({ user }: { user: User }) {
             );
           })()}
         </div>
+
+        {promos.length > 0 && (
+          <div className="mt-4 px-2">
+            <PromoCard promos={promos} />
+          </div>
+        )}
 
         {/* User block — единственная точка входа в Settings (Invites/Theme/Account+Logout).
             Тап → открывает Settings-модалку. */}
