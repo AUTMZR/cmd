@@ -29,6 +29,7 @@ const Settings = dynamic(() => import('./Settings'), { ssr: false, loading: () =
 const DeviceSheet = dynamic(() => import('./DeviceSheet'), { ssr: false, loading: () => null });
 const FileEditor = dynamic(() => import('./FileEditor'), { ssr: false, loading: () => null });
 const MobileChatSheet = dynamic(() => import('./MobileChatSheet'), { ssr: false, loading: () => null });
+import OnboardingWelcome from './OnboardingWelcome';
 
 interface User { id: string; email: string; name: string | null; is_admin: boolean; trial_until: string | null; email_verified: boolean }
 interface Device {
@@ -156,6 +157,10 @@ export default function AppShell({ user }: { user: User }) {
   const [mobilePane, setMobilePane] = useState<'chat' | 'files' | 'terminal'>('chat');
   // Главная мобильная навигация: bottom-tab-bar (Home/Chats/Devices/Settings).
   const [mobileTab, setMobileTab] = useState<MobileTab>('home');
+  const [onboardingDismissed, setOnboardingDismissed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('cmd_onboarding_dismissed') === '1';
+  });
   const [showAddDevice, setShowAddDevice] = useState(false);
   const [showAddProject, setShowAddProject] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -512,20 +517,32 @@ export default function AppShell({ user }: { user: User }) {
       </div>
       <div className="flex-1 overflow-y-auto">
         {sessions.length === 0 ? (
-          <EmptyState
-            icon={MessagesSquare}
-            title={t('chats.emptyTitle')}
-            subtitle={
-              projects.length === 0
-                ? t('chats.emptyNoProjects')
-                : t('chats.emptyHasProjects')
-            }
-            actionLabel={projects.length === 0 ? t('chats.emptyCtaCreateProject') : t('chats.emptyCtaOpenHome')}
-            onAction={() => {
-              if (projects.length === 0) setShowAddProject(true);
-              else setMobileTab('home');
-            }}
-          />
+          user?.email_verified === true && projects.length === 0 && !onboardingDismissed ? (
+            <OnboardingWelcome
+              onPickHasVps={() => {
+                setShowAddDevice(true);
+              }}
+              onDismiss={() => {
+                localStorage.setItem('cmd_onboarding_dismissed', '1');
+                setOnboardingDismissed(true);
+              }}
+            />
+          ) : (
+            <EmptyState
+              icon={MessagesSquare}
+              title={t('chats.emptyTitle')}
+              subtitle={
+                projects.length === 0
+                  ? t('chats.emptyNoProjects')
+                  : t('chats.emptyHasProjects')
+              }
+              actionLabel={projects.length === 0 ? t('chats.emptyCtaCreateProject') : t('chats.emptyCtaOpenHome')}
+              onAction={() => {
+                if (projects.length === 0) setShowAddProject(true);
+                else setMobileTab('home');
+              }}
+            />
+          )
         ) : (
           <div className="p-3 space-y-1">
             {sessions.map((s) => {
