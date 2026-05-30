@@ -113,8 +113,12 @@ export default function PrivacyPage() {
             Who we share data with
           </h2>
           <p className="mt-3 text-[14.5px] leading-[1.65]" style={{ color: 'var(--fg-2)' }}>
-            Nobody. We do not sell, rent, or share your data with third parties. There are no
-            analytics trackers, ad partners, or data brokers involved.
+            Nobody. We do not sell, rent, or share your data with third parties. No ad networks
+            or data brokers are involved. When the operator enables Plausible Analytics (currently
+            enabled on cmd.autmzr.com), aggregate usage events (signups, first-chat completions)
+            are recorded. Plausible is cookieless, does not track you across sites, does not use
+            your IP or device fingerprint to build a profile, and is GDPR/CCPA-compliant by
+            default.
           </p>
         </section>
 

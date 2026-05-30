@@ -168,7 +168,7 @@ export default function AppShell({ user }: { user: User }) {
   const [mobileTab, setMobileTab] = useState<MobileTab>('home');
   const [onboardingDismissed, setOnboardingDismissed] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
-    return localStorage.getItem('cmd_onboarding_dismissed') === '1';
+    return sessionStorage.getItem('cmd_onboarding_dismissed') === '1';
   });
   const [showAddDevice, setShowAddDevice] = useState(false);
   const [showAddProject, setShowAddProject] = useState(false);
@@ -536,7 +536,7 @@ export default function AppShell({ user }: { user: User }) {
                 setShowAddDevice(true);
               }}
               onDismiss={() => {
-                localStorage.setItem('cmd_onboarding_dismissed', '1');
+                sessionStorage.setItem('cmd_onboarding_dismissed', '1');
                 setOnboardingDismissed(true);
               }}
             />
