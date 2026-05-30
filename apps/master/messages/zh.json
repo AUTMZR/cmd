@@ -884,5 +884,38 @@
     "gemini_2_5_pro": { "hint": "严肃任务,大上下文", "tag": "智能" },
     "gpt_5_3_codex": { "hint": "最强的 Codex 模型,适合复杂编码任务", "tag": "智能体" },
     "gpt_5_codex": { "hint": "日常开发任务更快更便宜", "tag": "平衡" }
+  },
+  "onboarding": {
+    "welcome": {
+      "title": "欢迎使用 cmd",
+      "subtitle": "连接设备，几分钟内开始用手机管理 AI 代理。",
+      "hasVpsTitle": "我有 VPS",
+      "hasVpsHint": "我们将通过 SSH 连接并创建您的第一个项目。",
+      "noVpsTitle": "我没有 VPS",
+      "noVpsHint": "这里告诉您去哪里获取 — 只需 5 分钟。",
+      "demoTitle": "先看演示",
+      "demoHint": "看看聊天界面，然后决定。",
+      "skip": "跳过 — 我自己来"
+    },
+    "noVps": {
+      "title": "5 分钟内获取 VPS",
+      "intro": "cmd 在您的 VPS 上运行 — 您提供服务器，我们提供界面。其他用户常用的提供商：",
+      "timewebHint": "俄罗斯，接受 RU 卡，每月 $3 起",
+      "begetHint": "俄罗斯，简单面板，提供免费试用 VPS",
+      "hetznerHint": "德国，$4/月，国际用户首选",
+      "outro": "在提供商处注册后，回来选择「我有 VPS」 — 我们处理其余的事。",
+      "back": "返回"
+    },
+    "demo": {
+      "badge": "演示 — 只读",
+      "title": "这就是通过 cmd 使用 claude 的样子",
+      "you": "你",
+      "msgUser1": "回滚 prod-fra-1 上的最后一次部署",
+      "msgAsst1": "正在执行。回滚到提交 7a3f1c4 并重新运行迁移。如果您关闭应用，我会自己继续。",
+      "msgUser2": "显示出了什么错",
+      "msgAsst2": "日志：src/handlers/upload.ts:42 中的 TypeError — undefined.length。来自提交 b7e9，该部署的最后提交。已回滚。",
+      "outro": "这是静态演示。要使用您自己的文件，请连接您的 VPS。",
+      "cta": "连接我的 VPS"
+    }
   }
 }

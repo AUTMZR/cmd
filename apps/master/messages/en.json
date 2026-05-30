@@ -884,5 +884,38 @@
     "gemini_2_5_pro": { "hint": "Serious tasks, large context", "tag": "smart" },
     "gpt_5_3_codex": { "hint": "Strongest Codex model for complex coding tasks", "tag": "agentic" },
     "gpt_5_codex": { "hint": "Faster and cheaper for everyday dev tasks", "tag": "balanced" }
+  },
+  "onboarding": {
+    "welcome": {
+      "title": "Welcome to cmd",
+      "subtitle": "Connect a device and start running AI agents from your phone in a few minutes.",
+      "hasVpsTitle": "I have a VPS",
+      "hasVpsHint": "We'll SSH in and create your first project.",
+      "noVpsTitle": "I don't have a VPS",
+      "noVpsHint": "Here's where to get one — takes 5 minutes.",
+      "demoTitle": "Show me a demo first",
+      "demoHint": "See what a chat looks like, then decide.",
+      "skip": "Skip — I'll figure it out"
+    },
+    "noVps": {
+      "title": "Get a VPS in 5 minutes",
+      "intro": "cmd runs on your VPS — you bring the server, we provide the interface. Here are providers other users go with:",
+      "timewebHint": "Russia, accepts RU cards, from $3/mo",
+      "begetHint": "Russia, simple panel, free trial VPS available",
+      "hetznerHint": "Germany, $4/mo, popular for international users",
+      "outro": "Once you've signed up with a provider, come back and pick \"I have a VPS\" — we'll do the rest.",
+      "back": "Back"
+    },
+    "demo": {
+      "badge": "Demo — read-only",
+      "title": "Here's what working with claude through cmd looks like",
+      "you": "you",
+      "msgUser1": "Roll back the last deploy on prod-fra-1",
+      "msgAsst1": "On it. Reverting to commit 7a3f1c4 and re-running migrations. I'll keep going if you close the app.",
+      "msgUser2": "Show me what broke",
+      "msgAsst2": "Logs: TypeError in src/handlers/upload.ts:42 — undefined.length. From commit b7e9, last commit of that deploy. Rolled back.",
+      "outro": "This is a static demo. To try with your own files, connect your VPS.",
+      "cta": "Connect my VPS"
+    }
   }
 }
