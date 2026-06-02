@@ -22,7 +22,7 @@
   --vibrant-fg:   #0a1c12;
   --ok:           #5fb878;
   --danger:       #f87171;
-  --marker:       #ffe24d;
+  --marker:       rgba(250, 214, 80, .34);
   /* Hero chocolate-glow — единственный warm-tone акцент на тёмном лендинге */
   --hero-glow:    radial-gradient(
                     ellipse 720px 480px at 50% 18%,
@@ -69,7 +69,7 @@ html[data-theme="light"] .linear-root {
   --vibrant:      #0f6e3a;
   --ok:           #178b4a;
   --danger:       #b91c1c;
-  --marker:       #ffd400;
+  --marker:       rgba(245, 197, 24, .45);
   --shadow-glow: 0 0 32px rgba(23, 139, 74, .10);
   --shadow-soft: 0 1px 0 0 rgba(0, 0, 0, .03), 0 8px 24px -12px rgba(42, 29, 20, .15);
 }
