@@ -29,7 +29,6 @@ import { hub } from '@/lib/ws-hub';
 import { validateRfsToken } from '@/lib/rfs-tokens';
 import { rateLimit } from '@/lib/rate-limit';
 import { queryOne } from '@/lib/db';
-import { isTrialExpired } from '@/lib/access';
 
 type Op = 'list' | 'read' | 'write' | 'edit' | 'exec';
 const OPS: Op[] = ['list', 'read', 'write', 'edit', 'exec'];
@@ -72,15 +71,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ op:
   const deviceId = scope.fs_device_id;
   const userId = scope.user_id;
 
-  // Trial gate via scope's user. Also reject if the user no longer exists.
-  const user = await queryOne<{ id: string; is_admin: boolean; trial_until: string | null; email: string; name: string | null; email_verified: boolean }>(
-    `SELECT id, is_admin, trial_until, email, name, email_verified FROM pc.users WHERE id = $1`,
+  // Reject if the user no longer exists.
+  const user = await queryOne<{ id: string; is_admin: boolean; email: string; name: string | null; email_verified: boolean }>(
+    `SELECT id, is_admin, email, name, email_verified FROM pc.users WHERE id = $1`,
     [userId],
   );
   if (!user) return NextResponse.json({ error: 'rfs token owner gone' }, { status: 401 });
-  if (isTrialExpired(user)) {
-    return NextResponse.json({ error: 'trial_expired', upgradeUrl: '/upgrade' }, { status: 402 });
-  }
 
   // Project path — the authoritative scope for any path argument.
   const project = await queryOne<{ id: string; path: string }>(

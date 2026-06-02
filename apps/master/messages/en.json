@@ -8,7 +8,7 @@
     "title": "All your VPS and CLIs",
     "titleAccent": "in one mobile interface.",
     "lede": "One CLI subscription. Every server you own. Voice control from anywhere — your phone is the IDE now.",
-    "ctaCloud": "Start free — 14 days, no card",
+    "ctaCloud": "Start free",
     "ctaGithub": "⭐ Star on GitHub",
     "metaLine": "Open source for self-host · Mobile-first · Voice input",
     "mockup": {
@@ -108,52 +108,23 @@
   },
   "pricing": {
     "eyebrow": "Pricing",
-    "title": "Run it yourself, or let us run it for you.",
-    "lede": "Honest note: this is built by one person. Self-host is free forever with no feature-gating. The hosted tier is how the project gets maintained.",
-    "selfHost": {
-      "name": "Self-host",
+    "title": "Free. Forever.",
+    "lede": "Open-source and self-hosted. Run it on your own server, bring your own Claude or Gemini subscription, and use it with no limits. No card, no trial, no feature-gating.",
+    "free": {
+      "name": "Autmzr",
       "tag": "AGPL-3.0",
       "price": "Free",
       "period": "forever",
-      "blurb": "Bring your own VPS. Clone, configure, ship.",
+      "blurb": "Bring your own server. Clone, configure, ship.",
       "bullet1": "Every feature, no limits",
       "bullet2": "Any number of servers, projects, CLIs",
       "bullet3": "Your domain, your data, your backups",
       "bullet4": "No telemetry, ever",
       "bullet5": "Community support on GitHub",
-      "cta": "Get the code"
+      "cta": "Start free",
+      "ctaCode": "Get the code"
     },
-    "pro": {
-      "name": "Pro",
-      "tag": "Hosted",
-      "badge": "Most popular",
-      "price": "$19",
-      "period": "/ month",
-      "priceYearly": "or $190/year — save $38 (2 months free)",
-      "blurb": "We host the master. You bring servers, keys, and CLIs.",
-      "bullet1": "Unlimited servers and projects",
-      "bullet2": "Voice mode + full Claude Code & Gemini CLI integration",
-      "bullet3": "Auto-updates and session backups",
-      "bullet4": "Email + Telegram support",
-      "bullet5": "14 days free, no card required",
-      "cta": "Start free"
-    },
-    "team": {
-      "name": "Team",
-      "tag": "Q3 2026",
-      "badge": "Coming soon",
-      "price": "$49",
-      "period": "/ seat / month",
-      "blurb": "Everything in Pro, plus shared infrastructure for small teams.",
-      "bullet1": "Project sharing across the team",
-      "bullet2": "Audit log of every agent action",
-      "bullet3": "SSO (Google, GitHub, Microsoft)",
-      "bullet4": "Role-based access (admin / dev / viewer)",
-      "bullet5": "Priority support",
-      "cta": "Notify me"
-    },
-    "lockInNote": "No lock-in. Cancel anytime. Export your data anytime. Self-host any time.",
-    "footer": "Either way, your Claude/Gemini key or subscription stays yours. We don't resell anyone's tokens."
+    "footer": "Your Claude/Gemini key or subscription stays yours. We don't resell anyone's tokens."
   },
   "faq": {
     "eyebrow": "FAQ",
@@ -241,47 +212,20 @@
       "newProjectFolder": "Pick folder",
       "back": "← Back",
       "selectFolder": "Select this folder →",
-      "subscriptionTitle": "Subscription",
-      "trialName": "Trial (14 days)",
-      "trialLeft": "5 days left",
-      "trialUntilLabel": "TRIAL UNTIL",
-      "trialUntilDate": "May 9, 2026",
+      "subscriptionTitle": "Plan",
+      "trialName": "Free",
+      "trialLeft": "Active",
+      "trialUntilLabel": "LICENSE",
+      "trialUntilDate": "AGPL-3.0",
       "limitLabel": "LIMIT",
-      "limitValue": "5 devices",
-      "upgradeCta": "✦ Upgrade to Pro — $19/mo",
-      "subscriptionTagline": "Pro — $19/mo. Unlimited servers, unlimited projects, voice mode, full Claude Code & Gemini integration."
+      "limitValue": "Unlimited",
+      "subscriptionTagline": "Every feature, no limits. Free forever, open-source."
     }
   },
   "billing": {
-    "tab": "Subscription",
-    "loading": "Loading…",
-    "selfHostedTitle": "Self-hosted",
-    "selfHostedBody": "All features unlocked, no limits.",
     "adminTitle": "Administrator",
-    "trial": "Trial (14 days)",
-    "personal": "Pro",
-    "team": "Team",
-    "cancelled": "Cancelled",
-    "free": "Free",
-    "trialDaysLeft": "{days} days left",
-    "trialActive": "Active",
-    "trialExpired": "Trial expired",
-    "subscriptionExpired": "Subscription expired",
-    "trialUntil": "Trial until",
-    "validUntil": "Valid until",
-    "deviceLimit": "Device limit",
-    "upgradeFromTrial": "Upgrade to Pro — $19/mo",
-    "manageSubscription": "Manage subscription",
-    "renew": "Renew subscription",
-    "tagline": "Pro — $19/mo. Unlimited servers, unlimited projects, voice mode, full Claude Code & Gemini integration.",
-    "comingSoonTitle": "Payments coming soon",
-    "comingSoonBody": "We're integrating the payment provider. During beta all users stay on trial. We'll email {email} when billing goes live.",
-    "comingSoonOk": "Got it",
-    "banner": {
-      "daysLeft": "{days, plural, one {# day} other {# days}} left in your free trial",
-      "expired": "Your free trial has ended.",
-      "cta": "Upgrade →"
-    }
+    "selfHostedTitle": "Free plan",
+    "selfHostedBody": "Every feature unlocked, no limits. Forever."
   },
   "verifyEmail": {
     "idle": {
@@ -345,7 +289,7 @@
   "settings": {
     "title": "Settings",
     "tabs": {
-      "billing": "Subscription",
+      "billing": "Plan",
       "invites": "Invites",
       "theme": "Theme",
       "account": "Account"
@@ -369,7 +313,7 @@
   "auth": {
     "appName": "Autmzr Command",
     "subtitleSetup": "Create admin account",
-    "subtitleSignup": "Create your account — 14 days free",
+    "subtitleSignup": "Create your account — free forever",
     "subtitleSignin": "Sign in to your account",
     "name": "Name",
     "namePlaceholder": "Alex",
@@ -380,7 +324,7 @@
     "submitSetup": "Create and sign in",
     "submitSignup": "Sign up — free forever",
     "submitSignin": "Sign in",
-    "switchToSignup": "New here? Sign up — 14 days free",
+    "switchToSignup": "New here? Sign up — it's free",
     "switchToSignin": "← Already have an account? Sign in",
     "footer": "self-hosted · AGPL-3.0 · connect your own servers",
     "loading": "Loading…",
@@ -860,21 +804,6 @@
       "showDetails": "▸ Show details",
       "hideDetails": "▾ Hide details"
     }
-  },
-  "upgrade": {
-    "title": "Trial expired",
-    "expiredAgo": "Your 14-day trial ended {days} day(s) ago.",
-    "expiredJust": "Your 14-day trial just ended.",
-    "intro": "To keep using Autmzr Cmd hosted at cmd.autmzr.com:",
-    "option1": "Email us — we'll set up a paid plan for you (Stripe self-serve coming in v0.4).",
-    "option2": "Or self-host Autmzr on your own server — AGPL-3.0, no time limits.",
-    "option3": "Either way, your projects and devices stay where they are.",
-    "contact": "Email us",
-    "mailSubject": "Autmzr Cmd — extend trial / paid plan",
-    "mailBody": "Hi! My trial on cmd.autmzr.com just ended ({email}). I'd like to keep using the hosted version — please send me the next steps.\n\nThanks!",
-    "back": "Back to landing",
-    "signOut": "Sign out",
-    "selfHostHint": "Prefer to host yourself? <link>github.com/AUTMZR/cmd</link>"
   },
   "models": {
     "haiku": { "hint": "Simple edits, boilerplate, CRUD", "tag": "fast" },

@@ -447,19 +447,6 @@ function BillingMock() {
             </div>
           </div>
         </div>
-        <div
-          style={{
-            background: '#5fa05f',
-            color: '#0a0a0c',
-            padding: '10px',
-            borderRadius: 10,
-            textAlign: 'center',
-            fontSize: 12,
-            fontWeight: 600,
-          }}
-        >
-          {t('upgradeCta')}
-        </div>
         <div style={{ fontSize: 10.5, color: '#777', lineHeight: 1.5 }}>
           {t('subscriptionTagline')}
         </div>

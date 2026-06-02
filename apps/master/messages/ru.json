@@ -8,7 +8,7 @@
     "title": "Все твои VPS и CLI",
     "titleAccent": "в одном мобильном интерфейсе.",
     "lede": "Одна подписка на CLI. Все твои серверы. Голосовое управление откуда угодно — твой телефон теперь IDE.",
-    "ctaCloud": "Начать бесплатно — 14 дней, без карты",
+    "ctaCloud": "Начать бесплатно",
     "ctaGithub": "⭐ Star на GitHub",
     "metaLine": "Open source для self-host · Mobile-first · Голосовой ввод",
     "mockup": {
@@ -107,53 +107,24 @@
     }
   },
   "pricing": {
-    "eyebrow": "Цены",
-    "title": "Хости сам или дай нам похостить.",
-    "lede": "Честно: сделано одним человеком. Self-host бесплатно навсегда, без feature-gating. Hosted-тариф — это то, на что проект поддерживается.",
-    "selfHost": {
-      "name": "Self-host",
+    "eyebrow": "Цена",
+    "title": "Бесплатно. Навсегда.",
+    "lede": "Open-source, self-hosted. Подними на своём сервере, принеси свою подписку Claude или Gemini — и пользуйся без лимитов. Без карты, без триала, без feature-gating.",
+    "free": {
+      "name": "Autmzr",
       "tag": "AGPL-3.0",
-      "price": "Free",
+      "price": "Бесплатно",
       "period": "навсегда",
-      "blurb": "Подними на своём VPS. Clone, configure, ship.",
+      "blurb": "Подними на своём сервере. Clone, configure, ship.",
       "bullet1": "Все возможности без лимитов",
       "bullet2": "Любое число серверов, проектов, CLI",
       "bullet3": "Свой домен, свои данные, свои бэкапы",
       "bullet4": "Ноль телеметрии",
       "bullet5": "Community support на GitHub",
-      "cta": "Скачать код"
+      "cta": "Начать бесплатно",
+      "ctaCode": "Скачать код"
     },
-    "pro": {
-      "name": "Pro",
-      "tag": "Hosted",
-      "badge": "Популярный",
-      "price": "$19",
-      "period": "/ мес",
-      "priceYearly": "или $190/год — выгода $38 (2 месяца бесплатно)",
-      "blurb": "Мы хостим master. Ты подключаешь свои серверы, ключи и CLI.",
-      "bullet1": "Без лимитов на серверы и проекты",
-      "bullet2": "Голосовой режим + полная интеграция Claude Code и Gemini CLI",
-      "bullet3": "Auto-updates и бэкапы сессий",
-      "bullet4": "Email + Telegram support",
-      "bullet5": "14 дней бесплатно, без карты",
-      "cta": "Начать бесплатно"
-    },
-    "team": {
-      "name": "Team",
-      "tag": "Q3 2026",
-      "badge": "Скоро",
-      "price": "$49",
-      "period": "/ место / мес",
-      "blurb": "Всё что в Pro плюс общая инфраструктура для маленьких команд.",
-      "bullet1": "Шейринг проектов в команде",
-      "bullet2": "Audit log по каждому действию агента",
-      "bullet3": "SSO (Google, GitHub, Microsoft)",
-      "bullet4": "Роли (admin / dev / viewer)",
-      "bullet5": "Приоритетная поддержка",
-      "cta": "Сообщить о запуске"
-    },
-    "lockInNote": "Без vendor-lock. Отмена в любой момент. Экспорт данных в любой момент. Self-host в любой момент.",
-    "footer": "В обоих случаях твой Claude/Gemini ключ или подписка остаётся твоим. Мы не перепродаём чужие токены."
+    "footer": "Твой Claude/Gemini ключ или подписка остаётся твоим. Мы не перепродаём чужие токены."
   },
   "faq": {
     "eyebrow": "FAQ",
@@ -241,47 +212,20 @@
       "newProjectFolder": "выбор папки",
       "back": "← Назад",
       "selectFolder": "Выбрать эту папку →",
-      "subscriptionTitle": "Подписка",
-      "trialName": "Trial (14 дней)",
-      "trialLeft": "5 дн. осталось",
-      "trialUntilLabel": "TRIAL ДО",
-      "trialUntilDate": "9 мая 2026",
+      "subscriptionTitle": "План",
+      "trialName": "Бесплатно",
+      "trialLeft": "Активен",
+      "trialUntilLabel": "ЛИЦЕНЗИЯ",
+      "trialUntilDate": "AGPL-3.0",
       "limitLabel": "ЛИМИТ",
-      "limitValue": "5 устройств",
-      "upgradeCta": "✦ Перейти на Pro — $19/мес",
-      "subscriptionTagline": "Pro — $19/мес. Без лимитов на серверы и проекты, голосовой режим, полная интеграция Claude Code и Gemini."
+      "limitValue": "Без лимитов",
+      "subscriptionTagline": "Все функции без лимитов. Навсегда бесплатно, open-source."
     }
   },
   "billing": {
-    "tab": "Подписка",
-    "loading": "Загрузка…",
-    "selfHostedTitle": "Self-hosted",
-    "selfHostedBody": "Все функции доступны без ограничений.",
     "adminTitle": "Администратор",
-    "trial": "Trial (14 дней)",
-    "personal": "Pro",
-    "team": "Team",
-    "cancelled": "Отменён",
-    "free": "Free",
-    "trialDaysLeft": "{days} дн. осталось",
-    "trialActive": "Active",
-    "trialExpired": "Trial истёк",
-    "subscriptionExpired": "Подписка истекла",
-    "trialUntil": "Trial до",
-    "validUntil": "Действует до",
-    "deviceLimit": "Лимит устройств",
-    "upgradeFromTrial": "Перейти на Pro — $19/мес",
-    "manageSubscription": "Управление подпиской",
-    "renew": "Возобновить подписку",
-    "tagline": "Pro — $19/мес. Без лимитов на серверы и проекты, голосовой режим, полная интеграция Claude Code и Gemini.",
-    "comingSoonTitle": "Платежи скоро",
-    "comingSoonBody": "Идёт интеграция платёжного провайдера. На время beta все юзеры остаются на trial. Пришлём письмо на {email} когда биллинг будет готов.",
-    "comingSoonOk": "Понятно",
-    "banner": {
-      "daysLeft": "{days, plural, one {# день} few {# дня} other {# дней}} осталось бесплатного периода",
-      "expired": "Бесплатный период закончился.",
-      "cta": "Перейти на Pro →"
-    }
+    "selfHostedTitle": "Бесплатный план",
+    "selfHostedBody": "Все функции доступны без ограничений. Навсегда."
   },
   "verifyEmail": {
     "idle": {
@@ -345,7 +289,7 @@
   "settings": {
     "title": "Настройки",
     "tabs": {
-      "billing": "Подписка",
+      "billing": "План",
       "invites": "Приглашения",
       "theme": "Тема",
       "account": "Аккаунт"
@@ -369,7 +313,7 @@
   "auth": {
     "appName": "Autmzr Command",
     "subtitleSetup": "Создай аккаунт администратора",
-    "subtitleSignup": "Создай аккаунт — 14 дней бесплатно",
+    "subtitleSignup": "Создай аккаунт — бесплатно навсегда",
     "subtitleSignin": "Войди в свой аккаунт",
     "name": "Имя",
     "namePlaceholder": "Александр",
@@ -380,7 +324,7 @@
     "submitSetup": "Создать и войти",
     "submitSignup": "Начать бесплатно",
     "submitSignin": "Войти",
-    "switchToSignup": "Нет аккаунта? Зарегистрироваться — 14 дней бесплатно",
+    "switchToSignup": "Нет аккаунта? Зарегистрироваться — бесплатно",
     "switchToSignin": "← Уже есть аккаунт? Войти",
     "footer": "self-hosted · AGPL-3.0 · подключай свои серверы",
     "loading": "Загрузка…",
@@ -860,21 +804,6 @@
       "showDetails": "▸ Показать детали",
       "hideDetails": "▾ Скрыть детали"
     }
-  },
-  "upgrade": {
-    "title": "Trial закончился",
-    "expiredAgo": "14-дневный trial закончился {days} дн. назад.",
-    "expiredJust": "14-дневный trial только что закончился.",
-    "intro": "Чтобы продолжить пользоваться Autmzr Cmd на cmd.autmzr.com:",
-    "option1": "Напиши нам — подключим платный план (Stripe self-serve будет в v0.4).",
-    "option2": "Или подними Autmzr у себя — AGPL-3.0, без лимитов по времени.",
-    "option3": "В любом случае проекты и устройства останутся на месте.",
-    "contact": "Написать нам",
-    "mailSubject": "Autmzr Cmd — продление trial / платный план",
-    "mailBody": "Привет! Trial на cmd.autmzr.com только что закончился ({email}). Хочу продолжить пользоваться хостед-версией — расскажите, что делать дальше.\n\nСпасибо!",
-    "back": "На лендинг",
-    "signOut": "Выйти",
-    "selfHostHint": "Хочешь поднять у себя? <link>github.com/AUTMZR/cmd</link>"
   },
   "models": {
     "haiku": { "hint": "Простые правки, бойлерплейт, CRUD", "tag": "быстрая" },

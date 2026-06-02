@@ -4,7 +4,7 @@
  * Settings — глобальные настройки аккаунта и UI.
  *
  * Четыре вкладки:
- *   1. Subscription — состояние trial / Pro / self-host (NEW)
+ *   1. Plan         — статус доступа (бесплатно, без лимитов)
  *   2. Invites      — приглашения и реферальные коды
  *   3. Theme        — выбор темы оформления
  *   4. Account      — профиль + Logout
@@ -16,7 +16,7 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Sparkles, Ticket, Palette, User as UserIcon, X, LogOut, Check, AlertCircle } from 'lucide-react';
+import { Sparkles, Ticket, Palette, User as UserIcon, X, LogOut, Check } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import NotificationsCard from './NotificationsCard';
 
@@ -34,8 +34,6 @@ const THEMES = ['soft', 'light', 'dark'] as const;
 type Theme = typeof THEMES[number];
 
 type Tab = 'billing' | 'invites' | 'theme' | 'account';
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 export default function Settings({
   user,
@@ -216,68 +214,18 @@ export default function Settings({
 }
 
 /**
- * Subscription state-машина:
- *  - is_admin === true                     → "Administrator" (бесконечный доступ)
- *  - trial_until === null && !admin        → "Self-hosted" (no limits)
- *  - trial_until > NOW()                   → "Trial active" с countdown
- *  - trial_until <= NOW()                  → "Trial expired" + Upgrade CTA
+ * Billing panel — продукт бесплатный. Показываем единственную карточку статуса:
+ * админ инстанса или обычный self-host юзер — у всех полный доступ без лимитов.
  */
 function BillingPanel({ user }: { user: User }) {
   const tb = useTranslations('billing');
-  const adminMode = user.is_admin;
-  const selfHostMode = !adminMode && user.trial_until === null;
-
-  let trialState: 'active' | 'expired' | null = null;
-  let daysLeft = 0;
-  let validUntilDate: Date | null = null;
-
-  if (!adminMode && user.trial_until) {
-    const ts = Date.parse(user.trial_until);
-    if (!Number.isNaN(ts)) {
-      validUntilDate = new Date(ts);
-      const msLeft = ts - Date.now();
-      daysLeft = Math.max(0, Math.ceil(msLeft / DAY_MS));
-      trialState = msLeft > 0 ? 'active' : 'expired';
-    }
-  }
-
   return (
     <div className="p-5 space-y-5">
-      {adminMode && (
-        <Card tone="vibrant" icon={Check} title={tb('adminTitle')}>
-          <p className="text-[13px] leading-[1.55]" style={{ color: 'var(--fg-2)' }}>
-            {tb('selfHostedBody')}
-          </p>
-        </Card>
-      )}
-
-      {selfHostMode && (
-        <Card tone="vibrant" icon={Check} title={tb('selfHostedTitle')}>
-          <p className="text-[13px] leading-[1.55]" style={{ color: 'var(--fg-2)' }}>
-            {tb('selfHostedBody')}
-          </p>
-        </Card>
-      )}
-
-      {trialState === 'active' && validUntilDate && (
-        <Card tone={daysLeft <= 3 ? 'urgent' : 'vibrant'} icon={Sparkles} title={tb('trial')}>
-          <Stat label={tb('trialActive')} value={tb('trialDaysLeft', { days: daysLeft })} />
-          <Stat label={tb('trialUntil')} value={validUntilDate.toLocaleDateString()} />
-          <UpgradeButton label={tb('upgradeFromTrial')} />
-          <p className="text-[12px] mt-3 leading-[1.55]" style={{ color: 'var(--muted)' }}>
-            {tb('tagline')}
-          </p>
-        </Card>
-      )}
-
-      {trialState === 'expired' && (
-        <Card tone="urgent" icon={AlertCircle} title={tb('trialExpired')}>
-          <p className="text-[13px] mb-4 leading-[1.55]" style={{ color: 'var(--fg-2)' }}>
-            {tb('comingSoonBody', { email: user.email })}
-          </p>
-          <UpgradeButton label={tb('upgradeFromTrial')} />
-        </Card>
-      )}
+      <Card tone="vibrant" icon={Check} title={user.is_admin ? tb('adminTitle') : tb('selfHostedTitle')}>
+        <p className="text-[13px] leading-[1.55]" style={{ color: 'var(--fg-2)' }}>
+          {tb('selfHostedBody')}
+        </p>
+      </Card>
     </div>
   );
 }
@@ -313,25 +261,3 @@ function Card({
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-3 py-1.5">
-      <span className="text-[12px] uppercase tracking-wider font-mono" style={{ color: 'var(--muted)' }}>
-        {label}
-      </span>
-      <span className="text-[13px] font-medium">{value}</span>
-    </div>
-  );
-}
-
-function UpgradeButton({ label }: { label: string }) {
-  return (
-    <a
-      href="/#pricing"
-      className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-[14px] font-semibold"
-      style={{ background: 'var(--vibrant)', color: 'var(--vibrant-fg, #fff)', minHeight: 44 }}
-    >
-      {label}
-    </a>
-  );
-}

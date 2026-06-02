@@ -8,7 +8,7 @@
     "title": "所有 VPS 和 CLI",
     "titleAccent": "都装进一个手机端。",
     "lede": "一份 CLI 订阅,所有服务器通用。任何地方语音操作 — 你的手机就是 IDE。",
-    "ctaCloud": "免费开始 — 14 天,无需信用卡",
+    "ctaCloud": "免费开始",
     "ctaGithub": "⭐ 在 GitHub 上 Star",
     "metaLine": "开源,可自托管 · 移动端优先 · 语音输入",
     "mockup": {
@@ -108,52 +108,23 @@
   },
   "pricing": {
     "eyebrow": "价格",
-    "title": "自己跑,或者交给我们跑。",
-    "lede": "老实说:这是一个人做的项目。自托管永久免费,没有任何 feature-gating。Hosted 是项目维护资金的来源。",
-    "selfHost": {
-      "name": "自托管",
+    "title": "免费。永久。",
+    "lede": "开源、自托管。在你自己的服务器上运行,带上你自己的 Claude 或 Gemini 订阅,无限制使用。无需信用卡,无试用期,无 feature-gating。",
+    "free": {
+      "name": "Autmzr",
       "tag": "AGPL-3.0",
       "price": "免费",
       "period": "永久",
-      "blurb": "用你自己的 VPS。Clone、配置、ship。",
+      "blurb": "用你自己的服务器。Clone、配置、ship。",
       "bullet1": "全部功能,没有限制",
       "bullet2": "任意数量的服务器、项目、CLI",
       "bullet3": "你的域名、你的数据、你的备份",
       "bullet4": "零遥测",
       "bullet5": "GitHub 上的社区支持",
-      "cta": "下载代码"
+      "cta": "免费开始",
+      "ctaCode": "下载代码"
     },
-    "pro": {
-      "name": "Pro",
-      "tag": "Hosted",
-      "badge": "最受欢迎",
-      "price": "$19",
-      "period": "/ 月",
-      "priceYearly": "或 $190/年 — 节省 $38(2 个月免费)",
-      "blurb": "我们托管 master。你带服务器、key 和 CLI。",
-      "bullet1": "无限服务器、无限项目",
-      "bullet2": "语音模式 + Claude Code 与 Gemini CLI 全集成",
-      "bullet3": "自动更新与会话备份",
-      "bullet4": "Email + Telegram 支持",
-      "bullet5": "14 天免费,无需信用卡",
-      "cta": "免费开始"
-    },
-    "team": {
-      "name": "Team",
-      "tag": "Q3 2026",
-      "badge": "即将推出",
-      "price": "$49",
-      "period": "/ 席位 / 月",
-      "blurb": "Pro 的全部功能,加上面向小团队的共享基础设施。",
-      "bullet1": "团队内项目共享",
-      "bullet2": "每个 agent 操作的审计日志",
-      "bullet3": "SSO(Google、GitHub、Microsoft)",
-      "bullet4": "基于角色的权限(admin / dev / viewer)",
-      "bullet5": "优先级支持",
-      "cta": "上线时通知我"
-    },
-    "lockInNote": "无 vendor lock。随时取消。随时导出数据。随时切换到自托管。",
-    "footer": "两个版本,你的 Claude/Gemini key 或订阅永远是你自己的。我们不倒卖任何人的 token。"
+    "footer": "你的 Claude/Gemini key 或订阅永远是你自己的。我们不倒卖任何人的 token。"
   },
   "faq": {
     "eyebrow": "FAQ",
@@ -241,47 +212,20 @@
       "newProjectFolder": "选文件夹",
       "back": "← 返回",
       "selectFolder": "选这个文件夹 →",
-      "subscriptionTitle": "订阅",
-      "trialName": "试用 (14 天)",
-      "trialLeft": "剩余 5 天",
-      "trialUntilLabel": "试用到",
-      "trialUntilDate": "2026 年 5 月 9 日",
+      "subscriptionTitle": "套餐",
+      "trialName": "免费",
+      "trialLeft": "已激活",
+      "trialUntilLabel": "许可证",
+      "trialUntilDate": "AGPL-3.0",
       "limitLabel": "限额",
-      "limitValue": "5 台设备",
-      "upgradeCta": "✦ 升级到 Pro — $19/月",
-      "subscriptionTagline": "Pro — $19/月。无限服务器、无限项目、语音模式、Claude Code 与 Gemini 全集成。"
+      "limitValue": "无限制",
+      "subscriptionTagline": "全部功能,没有限制。永久免费,开源。"
     }
   },
   "billing": {
-    "tab": "订阅",
-    "loading": "加载中…",
-    "selfHostedTitle": "自托管",
-    "selfHostedBody": "所有功能解锁,无限制。",
     "adminTitle": "管理员",
-    "trial": "试用 (14 天)",
-    "personal": "Pro",
-    "team": "团队",
-    "cancelled": "已取消",
-    "free": "免费",
-    "trialDaysLeft": "剩余 {days} 天",
-    "trialActive": "活跃",
-    "trialExpired": "试用已过期",
-    "subscriptionExpired": "订阅已过期",
-    "trialUntil": "试用到",
-    "validUntil": "有效期至",
-    "deviceLimit": "设备限制",
-    "upgradeFromTrial": "升级到 Pro — $19/月",
-    "manageSubscription": "管理订阅",
-    "renew": "续订",
-    "tagline": "Pro — $19/月。无限服务器、无限项目、语音模式、Claude Code 与 Gemini 全集成。",
-    "comingSoonTitle": "支付即将上线",
-    "comingSoonBody": "正在集成支付提供商。Beta 期间所有用户保持试用。计费上线后我们会发邮件到 {email}。",
-    "comingSoonOk": "知道了",
-    "banner": {
-      "daysLeft": "免费试用剩余 {days} 天",
-      "expired": "免费试用已结束。",
-      "cta": "升级 →"
-    }
+    "selfHostedTitle": "免费方案",
+    "selfHostedBody": "全部功能解锁,没有限制。永久。"
   },
   "verifyEmail": {
     "idle": {
@@ -345,7 +289,7 @@
   "settings": {
     "title": "设置",
     "tabs": {
-      "billing": "订阅",
+      "billing": "套餐",
       "invites": "邀请",
       "theme": "主题",
       "account": "账户"
@@ -369,7 +313,7 @@
   "auth": {
     "appName": "Autmzr Command",
     "subtitleSetup": "创建管理员账户",
-    "subtitleSignup": "创建账户 — 14 天免费",
+    "subtitleSignup": "创建账户 — 永久免费",
     "subtitleSignin": "登录你的账户",
     "name": "姓名",
     "namePlaceholder": "Alex",
@@ -380,7 +324,7 @@
     "submitSetup": "创建并登录",
     "submitSignup": "立即注册 — 永久免费",
     "submitSignin": "登录",
-    "switchToSignup": "没有账户?注册 — 14 天免费",
+    "switchToSignup": "没有账户?注册 — 免费",
     "switchToSignin": "← 已有账户?登录",
     "footer": "自托管 · AGPL-3.0 · 连接你自己的服务器",
     "loading": "加载中…",
@@ -860,21 +804,6 @@
       "showDetails": "▸ 显示详情",
       "hideDetails": "▾ 隐藏详情"
     }
-  },
-  "upgrade": {
-    "title": "试用期已结束",
-    "expiredAgo": "14 天试用期已于 {days} 天前结束。",
-    "expiredJust": "14 天试用期刚刚结束。",
-    "intro": "继续在 cmd.autmzr.com 使用 Autmzr Cmd:",
-    "option1": "给我们发邮件 — 帮你开通付费方案(Stripe 自助版本将在 v0.4 推出)。",
-    "option2": "或在自己服务器上自托管 Autmzr — AGPL-3.0,无时间限制。",
-    "option3": "无论哪种方式,项目和设备都保持原样。",
-    "contact": "联系我们",
-    "mailSubject": "Autmzr Cmd — 延长试用 / 付费方案",
-    "mailBody": "你好!我的 cmd.autmzr.com 试用期刚刚结束 ({email})。希望继续使用托管版本 — 请告诉我下一步怎么做。\n\n谢谢!",
-    "back": "回到首页",
-    "signOut": "退出",
-    "selfHostHint": "想自托管? <link>github.com/AUTMZR/cmd</link>"
   },
   "models": {
     "haiku": { "hint": "简单修改、模板代码、CRUD", "tag": "快速" },
