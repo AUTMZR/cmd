@@ -22,6 +22,7 @@
   --vibrant-fg:   #0a1c12;
   --ok:           #5fb878;
   --danger:       #f87171;
+  --marker:       rgba(125, 214, 163, .28);
   /* Hero chocolate-glow — единственный warm-tone акцент на тёмном лендинге */
   --hero-glow:    radial-gradient(
                     ellipse 720px 480px at 50% 18%,
@@ -68,6 +69,7 @@ html[data-theme="light"] .linear-root {
   --vibrant:      #0f6e3a;
   --ok:           #178b4a;
   --danger:       #b91c1c;
+  --marker:       rgba(95, 184, 120, .42);
   --shadow-glow: 0 0 32px rgba(23, 139, 74, .10);
   --shadow-soft: 0 1px 0 0 rgba(0, 0, 0, .03), 0 8px 24px -12px rgba(42, 29, 20, .15);
 }
@@ -1024,4 +1026,30 @@ html[data-theme="light"] .linear-root {
 .linear-root .ln-nav-link:focus-visible {
   outline: 2px solid var(--vibrant);
   outline-offset: 2px;
+}
+
+/* Hero «Forever free» — мазок маркером с анимацией прорисовки слева направо */
+.linear-root .marker-hl {
+  display: inline-block;
+  padding: 0 .3em;
+  border-radius: 2px;
+  transform: rotate(-1.6deg);
+  background-image: linear-gradient(
+    transparent 52%,
+    var(--marker) 52%,
+    var(--marker) 92%,
+    transparent 92%
+  );
+  background-repeat: no-repeat;
+  background-size: 0% 100%;
+  animation: marker-draw .75s .35s cubic-bezier(.22, .61, .36, 1) forwards;
+}
+@keyframes marker-draw {
+  to { background-size: 100% 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .linear-root .marker-hl {
+    animation: none;
+    background-size: 100% 100%;
+  }
 }

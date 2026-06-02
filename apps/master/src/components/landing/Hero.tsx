@@ -83,6 +83,18 @@ export default function Hero() {
             <span style={{ color: 'var(--vibrant)' }}>{t('titleAccent')}</span>
           </h1>
 
+          <div className="mt-5 flex flex-col items-center gap-1.5 sm:mt-6">
+            <span
+              className="marker-hl text-[22px] font-semibold tracking-tight sm:text-[28px]"
+              style={{ color: 'var(--fg)' }}
+            >
+              {t('foreverFree')}
+            </span>
+            <span className="font-mono text-[11.5px]" style={{ color: 'var(--muted)' }}>
+              {t('foreverFreeSub')}
+            </span>
+          </div>
+
           <p
             className="mx-auto mt-6 max-w-[680px] text-[15px] leading-[1.6] sm:text-[17px]"
             style={{ color: 'var(--fg-2)' }}
